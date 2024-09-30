@@ -3,14 +3,12 @@
 cmake_minimum_required(VERSION 3.20)
 set(CMAKE_CXX_STANDARD 23)
 
-set(EXTRA_COMPONENT_DIRS components)
-#set(COMPONENTS cxx app bootloader bootloader_support
-#       app_trace app_update efuse esp32 esp_common 
-#       esp_event esp_rom esp_partition espcoredump esptool_py freertos heap log 
-#       pthread soc perfmon vfs 
-#       nvs_flash spi_flash partition_table
-#       driver ieee802154
-#       main)
+set(EXTRA_COMPONENT_DIRS components drivers)
+set(COMPONENTS cxx app bootloader bootloader_support
+       app_trace app_update efuse esp32 esp_common 
+       esp_event esp_rom esp_partition espcoredump esptool_py freertos heap log 
+       pthread perfmon vfs spi_flash
+       main)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(zTank)

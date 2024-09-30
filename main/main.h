@@ -5,6 +5,8 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
+#include "volumetricMeter.h" // to del
+
 #include "zbHaCluster.h"
 
 
@@ -36,6 +38,8 @@ private:
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
 
     TaskHandle_t _xHandle;
+
+    VolumetricMeter _vMeter;
 
 
 }; // Main Class

@@ -9,7 +9,7 @@ Tank survey.
 ```
 git submodule add https://github.com/akira215/esp-ash-components.git components
 ```
-Put the task
+Create a partition.csv for zigbee and configure menuconfig with custom partition table
 
 ## Current Status
 

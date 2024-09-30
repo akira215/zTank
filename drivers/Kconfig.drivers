@@ -1,0 +1,12 @@
+menu "Zigbee Device"
+    
+    config VOLUME_METER_PIN
+        int "Connected Impulsion volume meter"
+        range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+        default 15
+        help
+            GPIO number for Impulsion volumetric meter.
+            Should have a pull up and an RC network for debouncing.
+    
+
+endmenu

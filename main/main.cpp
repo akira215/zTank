@@ -42,7 +42,6 @@ Main::Main()
 //Static
 void Main::shortPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
-    static bool onOff = false;
     //ESP_LOGI(TAG,"Short Press detected %ld -",id);
     esp_err_t ret = ZbNode::getInstance()->joinNetwork();
 
@@ -99,7 +98,9 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
 
 void Main::setup(void)
 {
-    ESP_LOGD(TAG,"Setup --");
+    ESP_LOGI(TAG,"---------- Setup ----------");
+
+    _vMeter.setKfactor(1); // 1 liter per impulsion
 
     _button.enablePullup();
     _buttonTask = new ButtonTask (_button);
@@ -218,10 +219,13 @@ esp_err_t Main::driver_init()
 
 void Main::run(void)
 {
-    ESP_LOGI(TAG,"Zigbee task high water mark %d", 
-                            uxTaskGetStackHighWaterMark(_zbDevice->getZbTask()));
+    ESP_LOGI(TAG,"Main task high water mark %d", 
+                            uxTaskGetStackHighWaterMark(NULL));
+
+    ESP_LOGI(TAG,"Counter read %d", _vMeter.getLevel());
 
     _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
+
 /*
     ESP_LOGI(TAG,"Task Handle %lx", (uint32_t)_xHandle);
     ESP_LOGI(TAG,"Button task high water mark %d", uxTaskGetStackHighWaterMark(_xHandle));
