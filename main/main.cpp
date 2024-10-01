@@ -30,10 +30,9 @@ static const char *TAG = "Main_app";
 
 Main App;
 
-
-
 Main::Main()
 {
+    _this = this;
     //_zbDevice->getInstance();
     //esp_log_level_set("Main_app", ESP_LOG_DEBUG); 
     esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG); 
@@ -100,7 +99,7 @@ void Main::setup(void)
 {
     ESP_LOGI(TAG,"---------- Setup ----------");
 
-    _vMeter.setKfactor(1); // 1 liter per impulsion
+    _fMeter.setKfactor(1); // 1 liter per impulsion
 
     _button.enablePullup();
     _buttonTask = new ButtonTask (_button);
@@ -127,10 +126,6 @@ void Main::setup(void)
                         (void*)MANUFACTURER_NAME);
     basicCl->addAttribute(ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
                         (void*)MODEL_IDENTIFIER);
-
-    ZbPowerCfgCluster* PowerCfgCl = new ZbPowerCfgCluster(false,
-                        2400,
-                        (uint8_t)25);
     
     ZbIdentifyCluster* identifyServer = new ZbIdentifyCluster();
     identifyServer->setCallback(&identifyHandler);
@@ -140,14 +135,12 @@ void Main::setup(void)
                                 ESP_TEMP_SENSOR_MIN_VALUE,
                                 ESP_TEMP_SENSOR_MAX_VALUE,
                                 ESP_ZB_ZCL_TEMP_MEASUREMENT_MEASURED_VALUE_DEFAULT);
+    
+    _timeCluster = new ZbTimeCluster(true);
 
-    ZbBasicCluster* basicCl2 = new ZbBasicCluster(*basicCl);
     ZbIdentifyCluster* identifyServer2 = new ZbIdentifyCluster(*identifyServer);
-    ZbIdentifyCluster* identifyClient2 = new ZbIdentifyCluster(*identifyClient);
 
-    ZbBasicCluster* basicCl3 = new ZbBasicCluster(*basicCl);
     ZbIdentifyCluster* identifyServer3 = new ZbIdentifyCluster(*identifyServer);
-    ZbIdentifyCluster* identifyClient3 = new ZbIdentifyCluster(*identifyClient);
 
 
     //ZbTemperatureMeasCluster* onOffCl  = new ZbTemperatureMeasCluster(*tempMeasurement);
@@ -156,21 +149,16 @@ void Main::setup(void)
     onOfflightCl->setCallback(&lightOnOffHandler);
 
     tempEp->addCluster(basicCl);
-    tempEp->addCluster(PowerCfgCl);
     tempEp->addCluster(identifyServer);
     tempEp->addCluster(identifyClient);
     tempEp->addCluster(_tempMeasurement);
+    tempEp->addCluster(_timeCluster);
 
-    switchEp->addCluster(basicCl2);
     switchEp->addCluster(identifyServer2);
-    switchEp->addCluster(identifyClient2);
     switchEp->addCluster(onOffCl);
 
-    lightEp->addCluster(basicCl3);
     lightEp->addCluster(identifyServer3);
-    lightEp->addCluster(identifyClient3);
     lightEp->addCluster(onOfflightCl);
-
 
     _zbDevice->addEndPoint(*switchEp);
     _zbDevice->addEndPoint(*tempEp);
@@ -180,6 +168,8 @@ void Main::setup(void)
     //driver_init();
 
     ESP_LOGI(TAG,"---------------- Starting ZbDevice ------------------------");
+    _zbDevice->setReadyCallback(initWhenJoined);
+
     //ZbApsData* inst = ZbApsData::getInstance();
     _zbDevice->start();
 
@@ -188,6 +178,17 @@ void Main::setup(void)
     _xHandle = xTaskGetHandle( "button_task" );
         
 
+}
+//Static
+void Main::initWhenJoined()
+{
+    static bool isInitialized = false;
+
+    _this->_timeCluster->readAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ID);
+
+    isInitialized = true;
+
+  
 }
 
 /*
@@ -222,7 +223,7 @@ void Main::run(void)
     ESP_LOGI(TAG,"Main task high water mark %d", 
                             uxTaskGetStackHighWaterMark(NULL));
 
-    ESP_LOGI(TAG,"Counter read %d", _vMeter.getLevel());
+    ESP_LOGI(TAG,"Counter read %d", _fMeter.getPinLevel());
 
     _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
 
@@ -246,13 +247,11 @@ extern "C" void app_main(void)
 {
     App.setup();
 
-    
-
     while (true)
     {
-        
         App.run();
     }    
+
     //should not reach here
 }
 

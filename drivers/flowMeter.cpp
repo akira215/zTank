@@ -5,15 +5,15 @@
   Author: Akira Shimahara
 */
 
-#include "volumetricMeter.h"
+#include "flowMeter.h"
 
 #include <iostream> //TODEL
 
 //Static
-void VolumetricMeter::impulsionHandler(void *handler_args, esp_event_base_t base, 
+void FlowMeter::impulsionHandler(void *handler_args, esp_event_base_t base, 
                                     int32_t id, void *event_data)
 {
-    VolumetricMeter* instance = *(static_cast<VolumetricMeter**>(event_data));
+    FlowMeter* instance = *(static_cast<FlowMeter**>(event_data));
 
     // This interrupt is triggered on rising and falling edge (whatever)
     if(instance->_irqMeter.read())
@@ -24,38 +24,39 @@ void VolumetricMeter::impulsionHandler(void *handler_args, esp_event_base_t base
 }
 
 
-
-VolumetricMeter::VolumetricMeter():_Kfactor("Kfactor")
+FlowMeter::FlowMeter():_Kfactor("Kfactor")
 {
     _irqMeter.enableInterrupt(GPIO_INTR_NEGEDGE);
 
     // Create a pointer of Pointer to be able to access to this in event loop
-    VolumetricMeter** ptr = new VolumetricMeter*(this);
+    FlowMeter** ptr = new FlowMeter*(this);
 
     // System Event Loop
     esp_event_loop_create_default();    // Create System Event Loop
     _irqMeter.setEventHandler(&impulsionHandler, ptr);
 
+    //addAttribute()
+
 }
 
 //TODEL for debugging purpose
-int VolumetricMeter::getPinLevel()
+int FlowMeter::getPinLevel()
 {
     return _irqMeter.read();
 }
 
-void VolumetricMeter::setKfactor(uint16_t kFactor)
+void FlowMeter::setKfactor(uint16_t kFactor)
 {
     _Kfactor = kFactor;
     _Kfactor.save(); // Save will write in the NVS
 }
 
-void VolumetricMeter::resetCounter()
+void FlowMeter::resetCounter()
 {
     _currentVolume = 0;
 }
 
-uint32_t VolumetricMeter::getCurrentVolume() const
+uint32_t FlowMeter::getCurrentVolume() const
 {
     return _currentVolume;
 }

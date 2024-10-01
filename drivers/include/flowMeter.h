@@ -7,20 +7,21 @@
 #pragma once
 
 #include "cppgpio.h"
-#include "persistedValue.h" 
+#include "persistedValue.h"
+#include "zbMeteringCluster.h"
 
 
 #define GPIO_VOLUME_METER  CONFIG_VOLUME_METER_PIN  //!< GPIO number connect to the LED
 
 /// @brief Driver to count volume from impulsion Meter - active low
-class VolumetricMeter
+class FlowMeter : public ZbMeteringCluster
 {
     GpioInput _irqMeter { static_cast<gpio_num_t>(GPIO_VOLUME_METER) };
     PersistedValue<uint16_t> _Kfactor;
     uint32_t    _currentVolume = 0;
 
 public:
-    VolumetricMeter();
+    FlowMeter();
     int getPinLevel();
 
     /// @brief set the k factor of the volumetric meter (write to NVS)

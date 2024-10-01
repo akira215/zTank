@@ -5,7 +5,7 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
-#include "volumetricMeter.h" // to del
+#include "flowMeter.h" // to del
 
 #include "zbHaCluster.h"
 
@@ -23,11 +23,14 @@ class Main final
 {
     GpioInput _button {GPIO_NUM_9,true};
     ButtonTask* _buttonTask = nullptr;
+    inline static Main* _this = nullptr;
 
 public:
     Main();
     void run(void);
     void setup(void);
+
+    static void initWhenJoined();
     static void shortPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
     static void longPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
@@ -36,10 +39,11 @@ public:
 private:
     ZbNode* _zbDevice = nullptr;
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
+    ZbTimeCluster* _timeCluster = nullptr;
 
     TaskHandle_t _xHandle;
 
-    VolumetricMeter _vMeter;
+    FlowMeter _fMeter;
 
 
 }; // Main Class

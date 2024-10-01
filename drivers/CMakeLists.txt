@@ -1,5 +1,5 @@
-set(SOURCES volumetricMeter.cpp)
+set(SOURCES flowMeter.cpp volumetricMeter.cpp)
 idf_component_register(SRCS ${SOURCES}
                     INCLUDE_DIRS include 
-                    REQUIRES cppgpio persistedValue)
+                    REQUIRES cppgpio persistedValue zigbee)
                     
