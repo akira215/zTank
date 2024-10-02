@@ -79,8 +79,12 @@ void Main::identifyHandler(uint16_t attrId, void* value)
 // Static
 void Main::lightOnOffHandler(uint16_t attrId, void* value)
 {
+    //ZbTimeCluster* timecluster = static_cast<ZbTimeCluster*>(handler_args);
+    //ZbCluster::eventArgs* e = static_cast<ZbCluster::eventArgs*>(event_data);
+    
     if(attrId != ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID)
         return;
+
 
     ESP_LOGI(TAG,"On Off set attr to %d",*((uint16_t*)value));
 
@@ -94,6 +98,11 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
     ESP_LOGI(TAG,"On Off attr is %d",*((bool*)(attr->data_p)));
 }
 
+//static 
+void Main::timeHandler(ZbCluster::eventType event, uint16_t attrId, void* value)
+{
+    ESP_LOGW(TAG, "Time cluster event type %x attribute %x", event, attrId);
+}
 
 void Main::setup(void)
 {
@@ -128,7 +137,7 @@ void Main::setup(void)
                         (void*)MODEL_IDENTIFIER);
     
     ZbIdentifyCluster* identifyServer = new ZbIdentifyCluster();
-    identifyServer->setCallback(&identifyHandler);
+   
     
     ZbIdentifyCluster* identifyClient = new ZbIdentifyCluster(true);
     _tempMeasurement  = new ZbTemperatureMeasCluster(false,
@@ -149,7 +158,7 @@ void Main::setup(void)
     //ZbTemperatureMeasCluster* onOffCl  = new ZbTemperatureMeasCluster(*tempMeasurement);
     ZbOnOffCluster* onOffCl = new ZbOnOffCluster(true);
     ZbOnOffCluster* onOfflightCl = new ZbOnOffCluster(false);
-    onOfflightCl->setCallback(&lightOnOffHandler);
+    
 
     tempEp->addCluster(basicCl);
     tempEp->addCluster(identifyServer);
@@ -168,7 +177,9 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*lightEp);
 
     // register handler when timecluster change AFTER attaching to endpoint
-    ESP_LOGI(TAG,"register %d",_timeCluster->registerEventHandler(&timeHandler));
+    _timeCluster->registerEventHandler(&timeHandler);
+    //identifyServer->registerEventHandler(&identifyHandler);
+    //onOfflightCl->registerEventHandler(&lightOnOffHandler);
 
     
     //driver_init();
@@ -186,13 +197,7 @@ void Main::setup(void)
 
 }
 
-//static 
-void Main::timeHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
-{
-    ZbTimeCluster* timecluster = static_cast<ZbTimeCluster*>(handler_args);
-    ZbCluster::eventArgs* e = static_cast<ZbCluster::eventArgs*>(event_data);
-    ESP_LOGW(TAG, "Time cluster event type %x attribute %x", e->event, e->attribute_id);
-}
+
 
 //Static
 void Main::initWhenJoined()
