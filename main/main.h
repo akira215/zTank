@@ -36,6 +36,8 @@ public:
 
     static void identifyHandler(uint16_t attrId, void* value);
     static void lightOnOffHandler(uint16_t attrId, void* value);
+
+    static void timeHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 private:
     ZbNode* _zbDevice = nullptr;
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;

@@ -138,6 +138,9 @@ void Main::setup(void)
     
     _timeCluster = new ZbTimeCluster(true);
 
+    ESP_LOGI(TAG,"---------------- Register ------------------------");
+
+
     ZbIdentifyCluster* identifyServer2 = new ZbIdentifyCluster(*identifyServer);
 
     ZbIdentifyCluster* identifyServer3 = new ZbIdentifyCluster(*identifyServer);
@@ -164,6 +167,9 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*tempEp);
     _zbDevice->addEndPoint(*lightEp);
 
+    // register handler when timecluster change AFTER attaching to endpoint
+    ESP_LOGI(TAG,"register %d",_timeCluster->registerEventHandler(&timeHandler));
+
     
     //driver_init();
 
@@ -179,6 +185,15 @@ void Main::setup(void)
         
 
 }
+
+//static 
+void Main::timeHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
+{
+    ZbTimeCluster* timecluster = static_cast<ZbTimeCluster*>(handler_args);
+    ZbCluster::eventArgs* e = static_cast<ZbCluster::eventArgs*>(event_data);
+    ESP_LOGW(TAG, "Time cluster event type %x attribute %x", e->event, e->attribute_id);
+}
+
 //Static
 void Main::initWhenJoined()
 {
