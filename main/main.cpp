@@ -5,6 +5,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
+#include <functional>
 
 #include <iostream>
 
@@ -98,7 +99,6 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
     ESP_LOGI(TAG,"On Off attr is %d",*((bool*)(attr->data_p)));
 }
 
-//static 
 void Main::timeHandler(ZbCluster::eventType event, uint16_t attrId, void* value)
 {
     ESP_LOGW(TAG, "Time cluster event type %x attribute %x", event, attrId);
@@ -176,11 +176,7 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*tempEp);
     _zbDevice->addEndPoint(*lightEp);
 
-    // register handler when timecluster change AFTER attaching to endpoint
-    _timeCluster->registerEventHandler(&timeHandler);
-    //identifyServer->registerEventHandler(&identifyHandler);
-    //onOfflightCl->registerEventHandler(&lightOnOffHandler);
-
+    _timeCluster->registerEventHandler(&Main::timeHandler, this);
     
     //driver_init();
 
