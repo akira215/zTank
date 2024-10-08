@@ -44,7 +44,8 @@ private:
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
     ZbTimeCluster* _timeCluster = nullptr;
 
-    TaskHandle_t _xHandle;
+    TaskHandle_t _xHandle = nullptr;
+    TaskHandle_t _eventLoopHandle = nullptr;
 
     FlowMeter _fMeter;
 

@@ -11,6 +11,8 @@
 
 #include "zbEndpoint.h" // to del
 
+#include <chrono> //todel
+
 /*
 #include "zbBasicCluster.h" //TODEL
 #include "zbPowerCfgCluster.h"
@@ -102,6 +104,17 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
 void Main::timeHandler(ZbCluster::eventType event, uint16_t attrId, void* value)
 {
     ESP_LOGW(TAG, "Time cluster event type %x attribute %x", event, attrId);
+    uint32_t* utc = static_cast<uint32_t*>(value);
+    ESP_LOGW(TAG, "UTC is  %ld", (*utc));
+
+    //std::chrono::duration<uint32_t,std::chrono::seconds> duration(*utc);
+    std::chrono::system_clock::time_point tp = std::chrono::sys_days(
+           std::chrono::year_month_day(std::chrono::year(2000), std::chrono::month(1), std::chrono::day(1)))
+       + std::chrono::hours(0) + std::chrono::minutes(0) + std::chrono::seconds(0);
+    tp += std::chrono::seconds(*utc);
+    std::time_t etime = std::chrono::system_clock::to_time_t(tp);
+    std::cout << "Time " << std::ctime(&etime)<< std::endl;
+
 }
 
 void Main::setup(void)
@@ -177,6 +190,7 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*lightEp);
 
     _timeCluster->registerEventHandler(&Main::timeHandler, this);
+    _eventLoopHandle = xTaskGetHandle( "EventLoop" );
     
     //driver_init();
 
@@ -242,6 +256,9 @@ void Main::run(void)
     ESP_LOGI(TAG,"Counter read %d", _fMeter.getPinLevel());
 
     _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
+
+    ESP_LOGI(TAG,"Event Loop task high water mark %d", 
+                            uxTaskGetStackHighWaterMark(_eventLoopHandle));
 
 /*
     ESP_LOGI(TAG,"Task Handle %lx", (uint32_t)_xHandle);
