@@ -29,31 +29,55 @@
 
 
 static const char *TAG = "Main_app";
-
+BlinkTask* Main::_ledBlinking = nullptr;
+GpioOutput Main::_led { (gpio_num_t)CONFIG_PIN_LED }; //TODO led pin number in config file
 
 Main App;
 
 Main::Main()
 {
-    _this = this;
     //_zbDevice->getInstance();
     //esp_log_level_set("Main_app", ESP_LOG_DEBUG); 
     esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG); 
+}
+
+// static
+void Main::ledFlash(uint64_t speed)
+{
+    if(speed == 0) 
+    {
+        if(_ledBlinking){
+        delete _ledBlinking;
+        _ledBlinking = nullptr;
+        }
+        _led.off();
+    } else if(speed == -1) {
+        if(_ledBlinking){
+        delete _ledBlinking;
+        _ledBlinking = nullptr;
+        }
+        _led.on();
+    } else {
+        if(!_ledBlinking)
+            _ledBlinking = new BlinkTask(_led, speed); // very short flash
+        else
+            _ledBlinking->setBlinkPeriod(speed);
+    }
+
 }
 
 //Static
 void Main::shortPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
     //ESP_LOGI(TAG,"Short Press detected %ld -",id);
-    esp_err_t ret = ZbNode::getInstance()->joinNetwork();
-
-    if (ret == ESP_ERR_NOT_ALLOWED)
+    if(ZbNode::getInstance()->isJoined())  
     {
-
         ESP_EARLY_LOGI(TAG, "Send 'on_off toggle' command");
 
         ZbNode::getInstance()->sendCommand(1,ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                     true,ESP_ZB_ZCL_CMD_ON_OFF_TOGGLE_ID);
+    } else {
+         ZbNode::getInstance()->joinNetwork();
     }
 }
 
@@ -74,9 +98,9 @@ void Main::identifyHandler(uint16_t attrId, void* value)
     
     ESP_LOGI(TAG,"Identifying time %d",*((uint16_t*)value));
     if (*((uint16_t*)value) !=0)
-        ZbNode::getInstance()->ledFlash(50);
+        ledFlash(50);
     else
-        ZbNode::getInstance()->ledFlash(0);
+        ledFlash(0);
 }
 
 // Static
@@ -101,19 +125,23 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
     ESP_LOGI(TAG,"On Off attr is %d",*((bool*)(attr->data_p)));
 }
 
-void Main::timeHandler(ZbCluster::eventType event, uint16_t attrId, void* value)
+void Main::timeHandler(uint8_t event, uint16_t attrId, void* value)
 {
     ESP_LOGW(TAG, "Time cluster event type %x attribute %x", event, attrId);
     uint32_t* utc = static_cast<uint32_t*>(value);
     ESP_LOGW(TAG, "UTC is  %ld", (*utc));
 
-    //std::chrono::duration<uint32_t,std::chrono::seconds> duration(*utc);
-    std::chrono::system_clock::time_point tp = std::chrono::sys_days(
-           std::chrono::year_month_day(std::chrono::year(2000), std::chrono::month(1), std::chrono::day(1)))
-       + std::chrono::hours(0) + std::chrono::minutes(0) + std::chrono::seconds(0);
-    tp += std::chrono::seconds(*utc);
-    std::time_t etime = std::chrono::system_clock::to_time_t(tp);
-    std::cout << "Time " << std::ctime(&etime)<< std::endl;
+    if(attrId ==  ESP_ZB_ZCL_ATTR_TIME_TIME_ID){
+        //std::chrono::duration<uint32_t,std::chrono::seconds> duration(*utc);
+        std::chrono::system_clock::time_point tp = std::chrono::sys_days(
+            std::chrono::year_month_day(std::chrono::year(2000), std::chrono::month(1), std::chrono::day(1)))
+        + std::chrono::hours(0) + std::chrono::minutes(0) + std::chrono::seconds(0);
+        tp += std::chrono::seconds(*utc);
+        std::time_t etime = std::chrono::system_clock::to_time_t(tp);
+        std::cout << "Time " << std::ctime(&etime)<< std::endl;
+    } else if (attrId == ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID){
+        std::cout << "Time Zone " << (*utc)<< std::endl;
+    }
 
 }
 
@@ -129,7 +157,11 @@ void Main::setup(void)
     _buttonTask->setLongPressHandler(&longPressHandler,(void*)this);
 
     ESP_LOGD(TAG,"Creating Zigbee device");
-    _zbDevice->getInstance();
+    _zbDevice = ZbNode::getInstance();
+    ESP_LOGE(TAG,"Register");
+    _zbDevice->registerNodeEventHandler(&Main::zbDeviceEventHandler, this);
+    //ESP_LOGE(TAG,"Register");
+    //ZbNode::getInstance()->registerNodeEventHandler();
     //esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG);
 
     ZbEndPoint* switchEp = new ZbEndPoint(1, 
@@ -159,6 +191,8 @@ void Main::setup(void)
                                 ESP_ZB_ZCL_TEMP_MEASUREMENT_MEASURED_VALUE_DEFAULT);
     
     _timeCluster = new ZbTimeCluster(true);
+    int32_t timeZone = 0;
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, &timeZone);
 
     ESP_LOGI(TAG,"---------------- Register ------------------------");
 
@@ -190,12 +224,13 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*lightEp);
 
     _timeCluster->registerEventHandler(&Main::timeHandler, this);
-    _eventLoopHandle = xTaskGetHandle( "EventLoop" );
+    _eventLoopHandle = xTaskGetHandle( "ZbEventLoop" );
     
     //driver_init();
 
     ESP_LOGI(TAG,"---------------- Starting ZbDevice ------------------------");
-    _zbDevice->setReadyCallback(initWhenJoined);
+    //_zbDevice->setReadyCallback(initWhenJoined);
+    
 
     //ZbApsData* inst = ZbApsData::getInstance();
     _zbDevice->start();
@@ -208,13 +243,46 @@ void Main::setup(void)
 }
 
 
-
-//Static
-void Main::initWhenJoined()
+//void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
+void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
 {
     static bool isInitialized = false;
 
-    _this->_timeCluster->readAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ID);
+    switch(event){
+        case ZbNode::JOINED:
+            {
+            ledFlash(0);
+            uint16_t arr[] = {ESP_ZB_ZCL_ATTR_TIME_TIME_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID };
+            _timeCluster->readAttribute(std::span(arr));
+            }
+            break;
+        case ZbNode::JOINING:
+            ledFlash(FAST_BLINK);
+            break;
+        case ZbNode::NLME_STATUS:
+            if(_zbDevice->isJoined()) 
+                ledFlash(0);
+            else 
+                ledFlash(50); //very short flash
+            break;
+        case ZbNode::LEAVING:
+            ledFlash(50);
+            break;
+        case ZbNode::LEFT:
+            ledFlash(-1);
+            break; 
+        default:
+            ESP_LOGW(TAG,"Device Event Handler, event %d not registered occured", 
+                        static_cast<uint>(event));
+            break;
+
+
+    }
+
+    //_this->_timeCluster->readAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ID);
+    //_this->_timeCluster->readAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID);
+   
 
     isInitialized = true;
 

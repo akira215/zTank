@@ -548,15 +548,11 @@ CONFIG_ENV_GPIO_RANGE_MIN=0
 CONFIG_ENV_GPIO_RANGE_MAX=30
 CONFIG_ENV_GPIO_IN_RANGE_MAX=30
 CONFIG_ENV_GPIO_OUT_RANGE_MAX=30
-
-#
-# Module Debugging
-#
+CONFIG_PIN_LED=23
 
 #
 # Zigbee Device
 #
-CONFIG_ZB_LED=23
 CONFIG_ZB_STACK_DEPTH=4096
 # end of Zigbee Device
 
@@ -565,6 +561,10 @@ CONFIG_ZB_STACK_DEPTH=4096
 #
 CONFIG_VOLUME_METER_PIN=15
 # end of Zigbee Device
+
+#
+# Module Debugging
+#
 # end of Project Settings
 
 #

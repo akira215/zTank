@@ -21,16 +21,20 @@
 // Main class used for testing only
 class Main final
 {
-    GpioInput _button {GPIO_NUM_9,true};
-    ButtonTask* _buttonTask = nullptr;
-    inline static Main* _this = nullptr;
+    GpioInput               _button {GPIO_NUM_9,true};
+    ButtonTask*             _buttonTask = nullptr;
+
+    static BlinkTask*       _ledBlinking;
+    static GpioOutput       _led;
+    
+    //inline static Main* _this = nullptr;
 
 public:
     Main();
     void run(void);
     void setup(void);
 
-    static void initWhenJoined();
+    void zbDeviceEventHandler(ZbNode::nodeEvent_t event);
     static void shortPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
     static void longPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
@@ -38,8 +42,13 @@ public:
     static void lightOnOffHandler(uint16_t attrId, void* value);
 
     //static void timeHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
-    void timeHandler(ZbCluster::eventType event, uint16_t attrId, void* value);
+    void timeHandler(uint8_t event, uint16_t attrId, void* value);
 private:
+    /// @brief Helper to flash led
+    /// @param speed flash cycle in ms. if 0, led will be set to off, 
+    /// if -1 led will be switch on
+    static void ledFlash(uint64_t speed);
+    
     ZbNode* _zbDevice = nullptr;
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
     ZbTimeCluster* _timeCluster = nullptr;
