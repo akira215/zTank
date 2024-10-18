@@ -9,9 +9,11 @@
 
 #include <iostream>
 
+
+
 #include "zbEndpoint.h" // to del
 
-#include <chrono> //todel
+
 
 /*
 #include "zbBasicCluster.h" //TODEL
@@ -127,20 +129,55 @@ void Main::lightOnOffHandler(uint16_t attrId, void* value)
 
 void Main::timeHandler(uint8_t event, uint16_t attrId, void* value)
 {
-    ESP_LOGW(TAG, "Time cluster event type %x attribute %x", event, attrId);
-    uint32_t* utc = static_cast<uint32_t*>(value);
-    ESP_LOGW(TAG, "UTC is  %ld", (*utc));
+    ESP_LOGI(TAG, "Time cluster event type %x attribute %x", event, attrId);
+   
+    switch(attrId){
+        case ESP_ZB_ZCL_ATTR_TIME_TIME_ID:{
+            uint32_t* utc = static_cast<uint32_t*>(value);
+            ESP_LOGW(TAG, "UTC is  %ld", (*utc));
 
-    if(attrId ==  ESP_ZB_ZCL_ATTR_TIME_TIME_ID){
-        //std::chrono::duration<uint32_t,std::chrono::seconds> duration(*utc);
-        std::chrono::system_clock::time_point tp = std::chrono::sys_days(
-            std::chrono::year_month_day(std::chrono::year(2000), std::chrono::month(1), std::chrono::day(1)))
-        + std::chrono::hours(0) + std::chrono::minutes(0) + std::chrono::seconds(0);
-        tp += std::chrono::seconds(*utc);
-        std::time_t etime = std::chrono::system_clock::to_time_t(tp);
-        std::cout << "Time " << std::ctime(&etime)<< std::endl;
-    } else if (attrId == ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID){
-        std::cout << "Time Zone " << (*utc)<< std::endl;
+            //std::chrono::duration<uint32_t,std::chrono::seconds> duration(*utc);
+            std::chrono::system_clock::time_point tp = std::chrono::sys_days(
+                std::chrono::year_month_day(std::chrono::year(2000), std::chrono::month(1), std::chrono::day(1)))
+            + std::chrono::hours(0) + std::chrono::minutes(0) + std::chrono::seconds(0);
+            tp += std::chrono::seconds(*utc);
+            std::time_t etime = std::chrono::system_clock::to_time_t(tp);
+            std::cout << "Time " << std::ctime(&etime)<< std::endl;
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID:{
+            int32_t* offset = static_cast<int32_t*>(value);
+            std::cout << "Time Zone " << (*offset)<< std::endl;
+            int8_t sign =  ((*offset) > 0) - ((*offset) < 0);
+            uint32_t val = abs(*offset);
+            char s = sign < 0 ? '-' : '+';
+            std::string strTZ = "UTC";
+            strTZ += sign < 0 ? "-" : "+";
+            strTZ += std::format("{:02}", (uint8_t)(val / 3600)) + ":";
+            strTZ += std::format("{:02}", (uint8_t)((val % 3600)/60))+ ":";
+            strTZ += std::format("{:02}", (uint8_t)((val % 3600)%60));
+            ESP_LOGI(TAG, "Offset is %s", strTZ.c_str());
+            setenv("TZ", "UTC,M3.5.0/01,M10.5.0/02",1); // You must include '0' after first designator e.g. GMT0GMT-1, ',1' is true or ON);
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_DST_START_ID:{
+            uint32_t* dst_start = static_cast<uint32_t*>(value);
+            ESP_LOGI(TAG, "dst_start is %ld", *dst_start);
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_DST_END_ID:{
+            uint32_t* dst_end = static_cast<uint32_t*>(value);
+            ESP_LOGI(TAG, "dst_end is %ld", *dst_end);
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_DST_SHIFT_ID:{
+            int32_t* dst_shift = static_cast<int32_t*>(value);
+            ESP_LOGI(TAG, "dst_end is %ld", *dst_shift);
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_STANDARD_TIME_ID:{
+            uint32_t* stdTime = static_cast<uint32_t*>(value);
+            ESP_LOGI(TAG, "standard is %ld", *stdTime);
+            break;}
+        case ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID:{
+            uint32_t* localTime = static_cast<uint32_t*>(value);
+            ESP_LOGI(TAG, "localTime is %ld", *localTime);
+            break;}
     }
 
 }
@@ -158,11 +195,12 @@ void Main::setup(void)
 
     ESP_LOGD(TAG,"Creating Zigbee device");
     _zbDevice = ZbNode::getInstance();
-    ESP_LOGE(TAG,"Register");
     _zbDevice->registerNodeEventHandler(&Main::zbDeviceEventHandler, this);
-    //ESP_LOGE(TAG,"Register");
-    //ZbNode::getInstance()->registerNodeEventHandler();
-    //esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG);
+    /// TEST ///////////////////////////////////////////////////////
+    int32_t offset = -7300;
+    timeHandler(0, 
+                ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, &offset);
+
 
     ZbEndPoint* switchEp = new ZbEndPoint(1, 
                             ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID);
@@ -190,9 +228,28 @@ void Main::setup(void)
                                 ESP_TEMP_SENSOR_MAX_VALUE,
                                 ESP_ZB_ZCL_TEMP_MEASUREMENT_MEASURED_VALUE_DEFAULT);
     
-    _timeCluster = new ZbTimeCluster(true);
-    int32_t timeZone = 0;
-    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, &timeZone);
+    //_timeCluster = new ZbTimeCluster(true);
+    _timeUtil = new ZbTimeUtil();
+    /*
+    int32_t timeZoneDefault = 0;
+    uint32_t dstStartDefault = ESP_ZB_ZCL_TIME_DST_START_DEFAULT_VALUE;
+    uint32_t dstEndDefault = ESP_ZB_ZCL_TIME_DST_END_DEFAULT_VALUE;
+    int32_t dstShiftDefault = ESP_ZB_ZCL_TIME_DST_SHIFT_DEFAULT_VALUE;
+    uint32_t stdTimeDefault = ESP_ZB_ZCL_TIME_STANDARD_TIME_DEFAULT_VALUE;
+    uint32_t localTimeDefault = ESP_ZB_ZCL_TIME_LOCAL_TIME_DEFAULT_VALUE;
+    uint32_t lastSetDefault = ESP_ZB_ZCL_TIME_LAST_SET_TIME_DEFAULT_VALUE;
+    uint32_t validUntilDefault = ESP_ZB_ZCL_TIME_VALID_UNTIL_TIME_DEFAULT_VALUE;
+
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, &timeZoneDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, &dstStartDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, &dstEndDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_DST_SHIFT_ID, &dstShiftDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_STANDARD_TIME_ID, &stdTimeDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &localTimeDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_LAST_SET_TIME_ID, &lastSetDefault);
+    _timeCluster->addAttribute(ESP_ZB_ZCL_ATTR_TIME_VALID_UNTIL_TIME_ID, &validUntilDefault);
+
+*/
 
     ESP_LOGI(TAG,"---------------- Register ------------------------");
 
@@ -211,7 +268,8 @@ void Main::setup(void)
     tempEp->addCluster(identifyServer);
     tempEp->addCluster(identifyClient);
     tempEp->addCluster(_tempMeasurement);
-    tempEp->addCluster(_timeCluster);
+    //tempEp->addCluster(_timeCluster);
+    tempEp->addCluster(_timeUtil);
 
     switchEp->addCluster(identifyServer2);
     switchEp->addCluster(onOffCl);
@@ -223,7 +281,7 @@ void Main::setup(void)
     _zbDevice->addEndPoint(*tempEp);
     _zbDevice->addEndPoint(*lightEp);
 
-    _timeCluster->registerEventHandler(&Main::timeHandler, this);
+    //_timeCluster->registerEventHandler(&Main::timeHandler, this);
     _eventLoopHandle = xTaskGetHandle( "ZbEventLoop" );
     
     //driver_init();
@@ -252,9 +310,19 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
         case ZbNode::JOINED:
             {
             ledFlash(0);
+            _timeUtil->syncRTC();
+            /*
+            
             uint16_t arr[] = {ESP_ZB_ZCL_ATTR_TIME_TIME_ID,
-                            ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID };
+                            ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_DST_START_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_DST_END_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_DST_SHIFT_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_STANDARD_TIME_ID,
+                            ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID
+                            };
             _timeCluster->readAttribute(std::span(arr));
+            */
             }
             break;
         case ZbNode::JOINING:

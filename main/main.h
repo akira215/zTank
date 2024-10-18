@@ -8,6 +8,7 @@
 #include "flowMeter.h" // to del
 
 #include "zbHaCluster.h"
+#include "zbTimeUtil.h" 
 
 
 #define SENSOR_ENDPOINT          10      /* esp temperature sensor device endpoint, used for temperature measurement */
@@ -51,7 +52,8 @@ private:
     
     ZbNode* _zbDevice = nullptr;
     ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
-    ZbTimeCluster* _timeCluster = nullptr;
+    //ZbTimeCluster* _timeCluster = nullptr;
+    ZbTimeUtil* _timeUtil = nullptr;
 
     TaskHandle_t _xHandle = nullptr;
     TaskHandle_t _eventLoopHandle = nullptr;
