@@ -8,7 +8,7 @@
 #include "flowMeter.h" // to del
 
 #include "zbHaCluster.h"
-#include "zbTimeUtil.h" 
+#include "zbTimeClusterClient.h" 
 
 
 #define SENSOR_ENDPOINT          10      /* esp temperature sensor device endpoint, used for temperature measurement */
@@ -42,23 +42,20 @@ public:
     static void identifyHandler(uint16_t attrId, void* value);
     static void lightOnOffHandler(uint16_t attrId, void* value);
 
-    //static void timeHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
-    void timeHandler(uint8_t event, uint16_t attrId, void* value);
 private:
     /// @brief Helper to flash led
     /// @param speed flash cycle in ms. if 0, led will be set to off, 
     /// if -1 led will be switch on
     static void ledFlash(uint64_t speed);
     
-    ZbNode* _zbDevice = nullptr;
-    ZbTemperatureMeasCluster* _tempMeasurement = nullptr;
-    //ZbTimeCluster* _timeCluster = nullptr;
-    ZbTimeUtil* _timeUtil = nullptr;
+    ZbNode*                     _zbDevice           = nullptr;
+    ZbTemperatureMeasCluster*   _tempMeasurement    = nullptr;
+    ZbTimeClusterClient*         _timeClient        = nullptr;
 
-    TaskHandle_t _xHandle = nullptr;
-    TaskHandle_t _eventLoopHandle = nullptr;
+    TaskHandle_t                _xHandle            = nullptr;
+    TaskHandle_t                _eventLoopHandle    = nullptr;
 
-    FlowMeter _fMeter;
+    FlowMeter                   _fMeter;
 
 
 }; // Main Class
