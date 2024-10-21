@@ -4,5 +4,6 @@ doc/
 .vscode/
 .devcontainer/
 managed_components/
+PCB/tank_PCB-backups/
 debug.log
 sdkonfig.old
