@@ -1,5 +1,5 @@
 # zTank
-Tank survey. 
+Tank survey, embedded sofware on dedicated PCB using ESP32C6 µC
 
 ## Requirements
 
@@ -16,9 +16,9 @@ Create a partition.csv for zigbee and configure menuconfig with custom partition
 Still work in progress, but is completely running. All bugs 
 could be reported to try to improve it.
 
-## Performance
+## PCB design
 
-
+![Alt text](PCB/screenshot/TankMonitorV1_1.png?raw=true "3D view of PCB board")
 
 ## Caveats
 
