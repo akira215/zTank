@@ -5,7 +5,7 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
-#include "flowMeter.h" // to del
+#include "waterMeterCluster.h" // to del
 
 #include "zbHaCluster.h"
 #include "zbTimeClusterClient.h" 
@@ -15,8 +15,8 @@
 /* Attribute values in ZCL string format
  * The string should be started with the length of its own.
  */
-#define MANUFACTURER_NAME               "\x05""AKIRA" //TODO del
-#define MODEL_IDENTIFIER                "\x08""ASH-Tank"  //TODO del
+#define MANUFACTURER_NAME               "\x09""AkiraCorp" //TODO del
+#define MODEL_IDENTIFIER                "\x10""WaterTankMonitor"  //TODO del
 
 
 // Main class used for testing only
@@ -55,7 +55,7 @@ private:
     TaskHandle_t                _xHandle            = nullptr;
     TaskHandle_t                _eventLoopHandle    = nullptr;
 
-    FlowMeter                   _fMeter;
+    WaterMeterCluster*          _fMeter             = nullptr;
 
 
 }; // Main Class
