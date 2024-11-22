@@ -10,6 +10,7 @@
 #include "persistedValue.h"
 #include "zbMeteringCluster.h"
 #include "zbAnalogValueCluster.h"
+#include "periodicSoftTask.h"
 
 #define K_FACTOR_ATTR  "\x07""Kfactor" //TODO del
 #define GPIO_VOLUME_METER  CONFIG_VOLUME_METER_PIN  //!< GPIO number connect to the Meter
@@ -18,12 +19,12 @@
 /// @brief Driver to count volume from impulsion Meter - active low
 class WaterMeterCluster : public ZbMeteringCluster
 {
-    GpioInput _irqMeter { static_cast<gpio_num_t>(GPIO_VOLUME_METER) };
+    GpioInput _irqMeter     { static_cast<gpio_num_t>(GPIO_VOLUME_METER) };
     PersistedValue<float_t> _Kfactor;
-    ZbAnalogValueCluster* _kfactorCluster = nullptr;
-    uint32_t    _currentVolume = 0;
-    esp_zb_uint48_t* _pcurrentSummationDelivered = nullptr;
-    
+    PersistedValue<uint8_t> _updatePeriod;
+    ZbAnalogValueCluster*   _kfactorCluster = nullptr;
+    PeriodicSoftTask*       _reportTask = nullptr;
+    uint64_t                _currentVolume = 0; // In fact it is not the current volume but number of tick
 public:
     WaterMeterCluster();
     int getPinLevel();
@@ -35,6 +36,9 @@ public:
     /// @brief return a pointer to the embedded kfactor cluster
     ZbCluster* getKfactorCluster();
 
+    /// @brief set the update period for reporting data (write to NVS)
+    void setUpdatePeriod(clusterEvent_t event, std::vector<attribute_t> attrs);
+
     /// @brief reset the Counter, after a reading for example
     void resetCounter();
 
@@ -43,6 +47,10 @@ public:
     uint32_t getCurrentVolume() const;
 
     void setCurrentSummationDelivered(uint64_t newSum);
+
+    void reportCurrentSummation();
+
+    void startReporting();
 
 private:
     // Event Handler for cppButton

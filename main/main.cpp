@@ -139,7 +139,8 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             // Synchronise RTC clock of the device
             _timeClient->syncRTC();
             // Reload data from coordinator
-            _fMeter->setCurrentSummationDelivered(671996);
+            _fMeter->setCurrentSummationDelivered(0);
+            _fMeter->startReporting();
 
             _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
             }
