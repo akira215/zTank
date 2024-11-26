@@ -140,7 +140,7 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             _timeClient->syncRTC();
             // Reload data from coordinator
             _fMeter->setCurrentSummationDelivered(0);
-            _fMeter->startReporting();
+            //_fMeter->startReporting();
 
             _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
             }

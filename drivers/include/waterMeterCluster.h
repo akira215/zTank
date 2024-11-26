@@ -12,18 +12,17 @@
 #include "zbAnalogValueCluster.h"
 #include "periodicSoftTask.h"
 
-#define K_FACTOR_ATTR  "\x07""Kfactor" //TODO del
-#define GPIO_VOLUME_METER  CONFIG_VOLUME_METER_PIN  //!< GPIO number connect to the Meter
-
+#define K_FACTOR_ATTR                   "\x07""Kfactor" //TODO del
+#define GPIO_VOLUME_METER               CONFIG_VOLUME_METER_PIN  //!< GPIO number connect to the Meter
+#define ATTR_METERING_CURRENT_VOLUME_ID 0x0025
 
 /// @brief Driver to count volume from impulsion Meter - active low
 class WaterMeterCluster : public ZbMeteringCluster
 {
     GpioInput _irqMeter     { static_cast<gpio_num_t>(GPIO_VOLUME_METER) };
     PersistedValue<float_t> _Kfactor;
-    PersistedValue<uint8_t> _updatePeriod;
     ZbAnalogValueCluster*   _kfactorCluster = nullptr;
-    PeriodicSoftTask*       _reportTask = nullptr;
+    //PeriodicSoftTask*       _reportTask = nullptr;
     uint64_t                _currentVolume = 0; // In fact it is not the current volume but number of tick
 public:
     WaterMeterCluster();
@@ -37,7 +36,7 @@ public:
     ZbCluster* getKfactorCluster();
 
     /// @brief set the update period for reporting data (write to NVS)
-    void setUpdatePeriod(clusterEvent_t event, std::vector<attribute_t> attrs);
+    //void setUpdatePeriod(clusterEvent_t event, std::vector<attribute_t> attrs);
 
     /// @brief reset the Counter, after a reading for example
     void resetCounter();
@@ -47,10 +46,11 @@ public:
     uint32_t getCurrentVolume() const;
 
     void setCurrentSummationDelivered(uint64_t newSum);
+    void incrementCurrentVolume();
 
-    void reportCurrentSummation();
+    //void reportCurrentSummation();
 
-    void startReporting();
+    //void startReporting();
 
 private:
     // Event Handler for cppButton

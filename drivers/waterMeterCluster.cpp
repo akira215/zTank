@@ -17,21 +17,20 @@ void WaterMeterCluster::impulsionHandler(void *handler_args, esp_event_base_t ba
 
     // This interrupt is triggered on rising and falling edge (whatever)
     if(instance->_irqMeter.read()){
-       instance->_currentVolume += 1;
+       //instance->_currentVolume += 1;
+       instance->incrementCurrentVolume();
        instance->setCurrentSummationDelivered(instance->_currentVolume);  
     }
 
     std::cout << "Impulsion: _currentVolume " << instance->_currentVolume << std::endl;
 
 }
-
+/*
 void WaterMeterCluster::reportCurrentSummation()
 {
-
-
     std::cout << "Periodic Task "  << +_updatePeriod << std::endl;
-
 }
+*/
 
 // sumFormat : 0bXYYYYZZZ ZZZ nb right to decimal 
 // YYYY nb left to decimal,  X supress leading zeros
@@ -39,8 +38,7 @@ WaterMeterCluster::WaterMeterCluster():
                                 ZbMeteringCluster(false, esp_zb_uint48_t({0,0}),
                                 0x00, ESP_ZB_ZCL_METERING_UNIT_M3_M3H_BINARY,
                                 0b0, ESP_ZB_ZCL_METERING_WATER_METERING),
-                                _Kfactor("Kfactor", 1.0f),
-                                _updatePeriod("updatePeriod", 15)
+                                _Kfactor("Kfactor", 1.0f)
 {
     // setup the embedded Kfactor cluster (analog value)
     //float_t currentFactor = _Kfactor;
@@ -75,12 +73,14 @@ WaterMeterCluster::WaterMeterCluster():
 */
     esp_zb_uint24_t multiplier = { 1, 0};
     esp_zb_uint24_t divisor = { 1000, 0};
-    uint8_t updatePeriod = _updatePeriod;
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, &multiplier);
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, &divisor);
-    addAttribute(ESP_ZB_ZCL_ATTR_METERING_DEFAULT_UPDATE_PERIOD_ID, &updatePeriod);
+    
+    const uint8_t attr_mra = ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING| ESP_ZB_ZCL_ATTR_MANUF_SPEC;
+    
+    addCustomAttribute(ATTR_METERING_CURRENT_VOLUME_ID, &_currentVolume, 
+            ESP_ZB_ZCL_ATTR_TYPE_U64, ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, 0x1234);
 
-    registerEventHandler(&WaterMeterCluster::setUpdatePeriod, this);
     
 }
 
@@ -88,13 +88,13 @@ ZbCluster* WaterMeterCluster::getKfactorCluster()
 {
     return _kfactorCluster;
 }
-
+/*
 void WaterMeterCluster::startReporting()
 {
     _reportTask = new PeriodicSoftTask(&WaterMeterCluster::reportCurrentSummation, 
                                     this, (uint64_t)(_updatePeriod*1000), "waterMeterReportTask");
 }
-
+*/
 void WaterMeterCluster::setCurrentSummationDelivered(uint64_t newSum)
 {
     esp_zb_uint48_t newVal = static_cast<esp_zb_uint48_t>(newSum);
@@ -132,34 +132,20 @@ void WaterMeterCluster::setKfactor(clusterEvent_t event, std::vector<attribute_t
     
 }
 
-void WaterMeterCluster::setUpdatePeriod(clusterEvent_t event, std::vector<attribute_t> attrs)
-{
-    if (event != ATTR_UPDATED_REMOTELY)
-        return;
-    
-    for (auto & el : attrs){
-        uint16_t attrId = el.attrId;
-        void* value = el.value;
-        if (attrId == ESP_ZB_ZCL_ATTR_METERING_DEFAULT_UPDATE_PERIOD_ID){
-
-            uint8_t currentPeriod = *(static_cast<float_t*>(value));
-            std::cout << "setUpdatePeriod current : " << currentPeriod << std::endl;
-            
-            _updatePeriod = currentPeriod;
-            _updatePeriod.save(); // Save will write in the NVS
-            setAttribute(ESP_ZB_ZCL_ATTR_METERING_DEFAULT_UPDATE_PERIOD_ID, &currentPeriod);
-            delete _reportTask;
-            _reportTask = nullptr;
-            startReporting();
-        }
-    }
-    
-}
 
 void WaterMeterCluster::resetCounter()
 {
     _currentVolume = 0;
 }
+
+void WaterMeterCluster::incrementCurrentVolume()
+{
+    _currentVolume += 1;
+    //setAttribute(ATTR_METERING_CURRENT_VOLUME_ID,
+    //            &_currentVolume);
+
+}
+
 
 uint32_t WaterMeterCluster::getCurrentVolume() const
 {
