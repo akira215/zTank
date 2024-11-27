@@ -73,13 +73,16 @@ WaterMeterCluster::WaterMeterCluster():
 */
     esp_zb_uint24_t multiplier = { 1, 0};
     esp_zb_uint24_t divisor = { 1000, 0};
+    
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, &multiplier);
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, &divisor);
     
-    const uint8_t attr_mra = ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING| ESP_ZB_ZCL_ATTR_MANUF_SPEC;
+    uint64_t test = 67;
+    addCustomAttribute(ATTR_METERING_CURRENT_VOLUME_ID, &test, 
+            ESP_ZB_ZCL_ATTR_TYPE_U64,  
+            ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING);
     
-    addCustomAttribute(ATTR_METERING_CURRENT_VOLUME_ID, &_currentVolume, 
-            ESP_ZB_ZCL_ATTR_TYPE_U64, ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, 0x1234);
+
 
     
 }
