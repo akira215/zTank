@@ -146,11 +146,11 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             esp_zb_zcl_attr_t *test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
                     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_METERING_CURRENT_VOLUME_ID);
             //        ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID);
-            uint64_t val = *(static_cast<uint64_t*>(test->data_p));
+            uint32_t val = *(static_cast<uint32_t*>(test->data_p));
 
             ESP_LOGI(TAG,"custom cluster is  id: %d - type: %d - acces: %d - manuf: %d",
                                         test->id, test->type, test->access, test->manuf_code);
-            ESP_LOGI(TAG,"Value custom cluster is : %lld",
+            ESP_LOGI(TAG,"Value custom cluster is : %ld",
                                         val);
             test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
                     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID);

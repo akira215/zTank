@@ -77,9 +77,9 @@ WaterMeterCluster::WaterMeterCluster():
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, &multiplier);
     addAttribute(ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, &divisor);
     
-    uint64_t test = 67;
+    esp_zb_uint48_t test = { 67, 0};
     addCustomAttribute(ATTR_METERING_CURRENT_VOLUME_ID, &test, 
-            ESP_ZB_ZCL_ATTR_TYPE_U64,  
+            ESP_ZB_ZCL_ATTR_TYPE_U48,  
             ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING);
     
 
@@ -102,6 +102,8 @@ void WaterMeterCluster::setCurrentSummationDelivered(uint64_t newSum)
 {
     esp_zb_uint48_t newVal = static_cast<esp_zb_uint48_t>(newSum);
     setAttribute(ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+                &newVal);
+    setAttribute(ATTR_METERING_CURRENT_VOLUME_ID,
                 &newVal);
 }
 
