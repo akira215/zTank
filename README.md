@@ -3,6 +3,10 @@ Tank survey, embedded sofware on dedicated PCB using ESP32C6 µC
 
 ## Requirements
 
+## Usage
+ - short press button to join the zigbee network (coordinator shall grant pairing) -> LED shall flash, until network is joined, it then shutoff
+  - long press button to leave network. When the LED is fixed on, the device is not connected to the network neither is trying to join
+
 
 ## Build Instructions
 

@@ -139,28 +139,37 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             // Synchronise RTC clock of the device
             _timeClient->syncRTC();
             // Reload data from coordinator
-            _fMeter->setCurrentSummationDelivered(0);
+            //_fMeter->setCurrentSummationDelivered(0);
             //_fMeter->startReporting();
-            esp_zb_lock_acquire(portMAX_DELAY);
+            //esp_zb_lock_acquire(portMAX_DELAY);
             //esp_zb_zcl_attr_t* test = _fMeter->getAttribute(ATTR_METERING_CURRENT_VOLUME_ID);
-            esp_zb_zcl_attr_t *test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
-                    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_METERING_CURRENT_VOLUME_ID);
+            // esp_zb_zcl_attr_t *test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
+            //        ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_METERING_CURRENT_VOLUME_ID);
             //        ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID);
-            uint32_t val = *(static_cast<uint32_t*>(test->data_p));
+            //uint32_t val = *(static_cast<uint32_t*>(test->data_p));
 
-            ESP_LOGI(TAG,"custom cluster is  id: %d - type: %d - acces: %d - manuf: %d",
-                                        test->id, test->type, test->access, test->manuf_code);
-            ESP_LOGI(TAG,"Value custom cluster is : %ld",
-                                        val);
-            test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
-                    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID);
+            //ESP_LOGI(TAG,"custom cluster is  id: %d - type: %d - acces: %d - manuf: %d",
+            //                            test->id, test->type, test->access, test->manuf_code);
+            //ESP_LOGI(TAG,"Value custom cluster is : %ld",
+            //                            val);
+            //test = esp_zb_zcl_get_attribute(1,ESP_ZB_ZCL_CLUSTER_ID_METERING ,
+            //        ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID);
 ;
             //uint64_t val = *(static_cast<uint64_t*>(test->data_p));
 
-            ESP_LOGI(TAG,"Value custom cluster is  id: %d - type: %d - acces: %d - manuf: %d",
-                                        test->id, test->type, test->access, test->manuf_code);
-            esp_zb_lock_release();
-            _tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID);
+            //ESP_LOGI(TAG,"Value custom cluster is  id: %d - type: %d - acces: %d - manuf: %d",
+            //                            test->id, test->type, test->access, test->manuf_code);
+            //esp_zb_lock_release();
+
+            //ESP_LOGI(TAG,"Setting reporting for attributes");
+
+            //int16_t tempChange = 1;
+            //_tempMeasurement->setReporting(ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID, &tempChange );
+
+            //uint16_t flowChange = 1;
+            //_fMeter->setReporting(ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_VALUE_ID, &flowChange);
+
+
             }
             break;
         case ZbNode::JOINING:
@@ -192,8 +201,7 @@ void Main::setup(void)
 {
     ESP_LOGI(TAG,"---------- Setup ----------");
 
-    _fMeter = new WaterMeterCluster();
-    //_fMeter->setKfactor(1); // 1 liter per impulsion
+    
 
     _button.enablePullup();
     _buttonTask = new ButtonTask (_button);
@@ -235,6 +243,9 @@ void Main::setup(void)
    
     
     ZbIdentifyCluster* identifyClient = new ZbIdentifyCluster(true);
+
+    _fMeter = new WaterFlowMeasCluster();
+
     _tempMeasurement  = new ZbTemperatureMeasCluster(false,
                                 ESP_TEMP_SENSOR_MIN_VALUE,
                                 ESP_TEMP_SENSOR_MAX_VALUE,
@@ -245,23 +256,20 @@ void Main::setup(void)
 
     ESP_LOGI(TAG,"---------------- Register ------------------------");
 
-
     ZbIdentifyCluster* identifyServer2 = new ZbIdentifyCluster(*identifyServer);
-
     ZbIdentifyCluster* identifyServer3 = new ZbIdentifyCluster(*identifyServer);
-
     ZbIdentifyCluster* identifyServer4 = new ZbIdentifyCluster(*identifyServer);
-
+    
 
     //ZbTemperatureMeasCluster* onOffCl  = new ZbTemperatureMeasCluster(*tempMeasurement);
     ZbOnOffCluster* onOffCl = new ZbOnOffCluster(true);
     ZbOnOffCluster* onOfflightCl = new ZbOnOffCluster(false);
     
-
-    measEp->addCluster(_fMeter);
-    measEp->addCluster(_fMeter->getKfactorCluster());
     measEp->addCluster(identifyServer4);
     measEp->addCluster(basicCl);
+    measEp->addCluster(_fMeter);
+    measEp->addCluster(_fMeter->getKfactorCluster());
+    
     
     tempEp->addCluster(identifyServer);
     tempEp->addCluster(identifyClient);
@@ -272,7 +280,6 @@ void Main::setup(void)
     switchEp->addCluster(identifyServer2);
     switchEp->addCluster(onOffCl);
     //switchEp->addCluster(powerCl);
-
 
     lightEp->addCluster(identifyServer3);
     lightEp->addCluster(onOfflightCl);
@@ -290,14 +297,12 @@ void Main::setup(void)
     ESP_LOGI(TAG,"---------------- Starting ZbDevice ------------------------");
     //_zbDevice->setReadyCallback(initWhenJoined);
     
-
     //ZbApsData* inst = ZbApsData::getInstance();
     _zbDevice->start();
 
     vTaskDelay(pdMS_TO_TICKS(7000));
     // Obtain the handle of a task from its name.
-    _xHandle = xTaskGetHandle( "button_task" );
-        
+    _xHandle = xTaskGetHandle( "button_task" ); 
 
 }
 

@@ -5,7 +5,8 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
-#include "waterMeterCluster.h" // to del
+//#include "waterMeterCluster.h" // to del
+#include "waterFlowMeasCluster.h" // to del
 
 #include "zbHaCluster.h"
 #include "zbTimeClusterClient.h" 
@@ -55,7 +56,7 @@ private:
     TaskHandle_t                _xHandle            = nullptr;
     TaskHandle_t                _eventLoopHandle    = nullptr;
 
-    WaterMeterCluster*          _fMeter             = nullptr;
+    WaterFlowMeasCluster*       _fMeter             = nullptr;
 
 
 }; // Main Class
