@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "footprints")(type "KiCad")(uri "${KIPRJMOD}/footprints")(options "")(descr ""))
+  (lib (name "zTankFootprints")(type "KiCad")(uri "${KIPRJMOD}/footprints/zTankFootprints.pretty")(options "")(descr ""))
+)

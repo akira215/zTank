@@ -8,3 +8,6 @@ PCB/tank_PCB-backups/
 debug.log
 sdkonfig.old
 .clangd
+.old
+PCB/tank_PCB-backups/
+.kicad_sch-bak
