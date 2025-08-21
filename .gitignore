@@ -6,7 +6,8 @@ doc/
 managed_components/
 PCB/tank_PCB-backups/
 debug.log
-sdkonfig.old
+sdkconfig
+sdkconfig.old
 .clangd
 .old
 PCB/tank_PCB-backups/

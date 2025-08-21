@@ -1,4 +1,4 @@
-menu "Zigbee Device"
+menu "zTank Device"
     
     config VOLUME_METER_PIN
         int "Connected Impulsion volume meter"
@@ -7,6 +7,28 @@ menu "Zigbee Device"
         help
             GPIO number for Impulsion volumetric meter.
             Should have a pull up and an RC network for debouncing.
+    
+    config I2C_MASTER_SCL
+        int "Connected i2c SCL GPIO"
+        range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+        default 2
+        help
+            GPIO number for I2C SCL of ADS converter.
+    
+    config I2C_MASTER_SDA
+        int "Connected i2c SDA GPIO"
+        range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+        default 1
+        help
+            GPIO number for I2C SDA of ADS converter.
+    
+    config ADS1115_READY_INT
+        int "Connected i2c READY_PIN GPIO"
+        range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+        default 3
+        help
+            GPIO number for the ready pin that of ADS converter,
+            used to trigger interrupt to read once ready
     
 
 endmenu

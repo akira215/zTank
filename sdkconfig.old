@@ -608,13 +608,13 @@ CONFIG_ESPTOOLPY_MONITOR_BAUD=115200
 #
 # Partition Table
 #
-CONFIG_PARTITION_TABLE_SINGLE_APP=y
+# CONFIG_PARTITION_TABLE_SINGLE_APP is not set
 # CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE is not set
 # CONFIG_PARTITION_TABLE_TWO_OTA is not set
 # CONFIG_PARTITION_TABLE_TWO_OTA_LARGE is not set
-# CONFIG_PARTITION_TABLE_CUSTOM is not set
+CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
-CONFIG_PARTITION_TABLE_FILENAME="partitions_singleapp.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
 CONFIG_PARTITION_TABLE_OFFSET=0x8000
 CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
@@ -627,6 +627,7 @@ CONFIG_ENV_GPIO_RANGE_MAX=30
 CONFIG_ENV_GPIO_IN_RANGE_MAX=30
 CONFIG_ENV_GPIO_OUT_RANGE_MAX=30
 CONFIG_PIN_LED=23
+CONFIG_PIN_BUTTON=9
 
 #
 # Zigbee Device
@@ -635,10 +636,21 @@ CONFIG_ZB_STACK_DEPTH=4096
 # end of Zigbee Device
 
 #
-# Zigbee Device
+# Zigbee
+#
+# CONFIG_ZB_ENABLED is not set
+# CONFIG_ZB_ZED is not set
+# CONFIG_ZB_RADIO_NATIVE is not set
+# end of Zigbee
+
+#
+# zTank Device
 #
 CONFIG_VOLUME_METER_PIN=15
-# end of Zigbee Device
+CONFIG_I2C_MASTER_SCL=2
+CONFIG_I2C_MASTER_SDA=1
+CONFIG_ADS1115_READY_INT=3
+# end of zTank Device
 
 #
 # Module Debugging
@@ -697,6 +709,12 @@ CONFIG_APPTRACE_DEST_UART_NONE=y
 CONFIG_APPTRACE_UART_TASK_PRIO=1
 CONFIG_APPTRACE_LOCK_ENABLE=y
 # end of Application Level Tracing
+
+#
+# Console Library
+#
+# CONFIG_CONSOLE_SORTED_HELP is not set
+# end of Console Library
 
 #
 # Driver Configurations
@@ -1826,6 +1844,18 @@ CONFIG_LIBC_TIME_SYSCALL_USE_RTC_HRT=y
 # end of NVS
 
 #
+# OpenThread
+#
+# CONFIG_OPENTHREAD_ENABLED is not set
+
+#
+# OpenThread Spinel
+#
+# CONFIG_OPENTHREAD_SPINEL_ONLY is not set
+# end of OpenThread Spinel
+# end of OpenThread
+
+#
 # PThreads
 #
 CONFIG_PTHREAD_TASK_PRIO_DEFAULT=5
@@ -1926,19 +1956,6 @@ CONFIG_VFS_INITIALIZE_DEV_NULL=y
 #
 # Zigbee
 #
-CONFIG_ZB_ENABLED=y
-# CONFIG_ZB_ZCZR is not set
-CONFIG_ZB_ZED=y
-# CONFIG_ZB_ZGPD is not set
-CONFIG_ZB_RADIO_NATIVE=y
-# CONFIG_ZB_RADIO_SPINEL_UART is not set
-
-#
-# Zigbee Example
-#
-# end of Zigbee Example
-
-CONFIG_ZB_DEBUG_MODE=y
 # end of Zigbee
 # end of Component config
 

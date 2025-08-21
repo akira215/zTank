@@ -627,6 +627,7 @@ CONFIG_ENV_GPIO_RANGE_MAX=30
 CONFIG_ENV_GPIO_IN_RANGE_MAX=30
 CONFIG_ENV_GPIO_OUT_RANGE_MAX=30
 CONFIG_PIN_LED=23
+CONFIG_PIN_BUTTON=9
 
 #
 # Zigbee Device
@@ -635,10 +636,13 @@ CONFIG_ZB_STACK_DEPTH=4096
 # end of Zigbee Device
 
 #
-# Zigbee Device
+# zTank Device
 #
 CONFIG_VOLUME_METER_PIN=15
-# end of Zigbee Device
+CONFIG_I2C_MASTER_SCL=2
+CONFIG_I2C_MASTER_SDA=1
+CONFIG_ADS1115_READY_INT=3
+# end of zTank Device
 
 #
 # Module Debugging
@@ -1956,7 +1960,7 @@ CONFIG_ZB_RADIO_NATIVE=y
 #
 # end of Zigbee Example
 
-CONFIG_ZB_DEBUG_MODE=y
+# CONFIG_ZB_DEBUG_MODE is not set
 # end of Zigbee
 # end of Component config
 
