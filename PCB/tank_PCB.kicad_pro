@@ -60,10 +60,6 @@
       ],
       "drc_exclusions": [
         [
-          "lib_footprint_mismatch|79400000|96650000|d1412552-83f5-4178-9a14-762dbc46974d|00000000-0000-0000-0000-000000000000",
-          ""
-        ],
-        [
           "starved_thermal|63000000|114800000|3a1768d0-03e9-4891-ad7b-9925f48d3ccf|be3729f1-fa63-4e21-bee1-13582dfd5bd3|F.Cu",
           ""
         ]
@@ -436,10 +432,15 @@
       "duplicate_sheet_names": "error",
       "endpoint_off_grid": "warning",
       "extra_units": "error",
+      "footprint_filter": "ignore",
+      "footprint_link_issues": "warning",
+      "four_way_junction": "ignore",
       "global_label_dangling": "warning",
       "hier_label_mismatch": "error",
       "label_dangling": "error",
+      "label_multiple_wires": "warning",
       "lib_symbol_issues": "warning",
+      "lib_symbol_mismatch": "warning",
       "missing_bidi_pin": "warning",
       "missing_input_pin": "warning",
       "missing_power_pin": "error",
@@ -452,9 +453,15 @@
       "pin_not_driven": "error",
       "pin_to_pin": "warning",
       "power_pin_not_driven": "error",
+      "same_local_global_label": "warning",
+      "similar_label_and_power": "warning",
       "similar_labels": "warning",
+      "similar_power": "warning",
       "simulation_model_issue": "ignore",
+      "single_global_label": "ignore",
       "unannotated": "error",
+      "unconnected_wire_endpoint": "warning",
+      "undefined_netclass": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
       "wire_dangling": "error"
@@ -566,6 +573,7 @@
       ],
       "filter_string": "",
       "group_symbols": true,
+      "include_excluded_from_bom": false,
       "name": "Grouped By Value",
       "sort_asc": true,
       "sort_field": "Référence"
@@ -600,6 +608,7 @@
     "net_format_name": "",
     "page_layout_descr_file": "",
     "plot_directory": "",
+    "space_save_all_events": true,
     "spice_current_sheet_as_root": false,
     "spice_external_command": "spice \"%I\"",
     "spice_model_current_sheet_as_root": true,
@@ -612,7 +621,7 @@
   "sheets": [
     [
       "dff7fccf-7d43-4c91-ba8a-bfa873cc6676",
-      "Racine"
+      "Root"
     ]
   ],
   "text_variables": {}

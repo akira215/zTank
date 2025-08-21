@@ -11,3 +11,5 @@ sdkonfig.old
 .old
 PCB/tank_PCB-backups/
 .kicad_sch-bak
+.kicad_sch.lck
+.kicad_pcb.lck
