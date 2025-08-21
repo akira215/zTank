@@ -4,13 +4,8 @@ doc/
 .vscode/
 .devcontainer/
 managed_components/
-PCB/tank_PCB-backups/
 debug.log
 sdkconfig
 sdkconfig.old
 .clangd
 .old
-PCB/tank_PCB-backups/
-.kicad_sch-bak
-.kicad_sch.lck
-.kicad_pcb.lck
