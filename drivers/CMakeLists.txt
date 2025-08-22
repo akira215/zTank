@@ -1,4 +1,4 @@
-set(SOURCES waterMeterCluster.cpp 
+set(SOURCES waterPressureMeasCluster.cpp 
             waterFlowMeasCluster.cpp
             adsDriver.cpp)
 

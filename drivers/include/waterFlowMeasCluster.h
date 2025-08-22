@@ -10,7 +10,6 @@
 #include "persistedValue.h"
 #include "ZbFlowMeasCluster.h"
 #include "zbAnalogValueCluster.h"
-#include "periodicSoftTask.h"
 
 #define K_FACTOR_ATTR                   "\x07""Kfactor" //TODO del
 #define GPIO_VOLUME_METER               CONFIG_VOLUME_METER_PIN  //!< GPIO number connect to the Meter

@@ -9,9 +9,13 @@
 
 #include <iostream>
 
+#include <functional>
+#include <map>
+
 #include "cppgpio.h"
 #include "cppi2c.h"
 #include "ads1115.h"
+#include "periodicSoftTask.h"
 
 #define I2C_MASTER_SCL_IO           CONFIG_I2C_MASTER_SCL      //!< GPIO number used for I2C master clock 
 #define I2C_MASTER_SDA_IO           CONFIG_I2C_MASTER_SDA      //!< GPIO number used for I2C master data  
@@ -35,18 +39,56 @@ public:
     
     void setup(void);
 
-    void start(void);
+    /// @brief Start periodic query of the sensors 
+    /// @param delay_ms Delay between 2 queries, should be greater than query duration (Sum of each conversion times)
+    void start(uint64_t delay_ms = 1000);
+    
+    
     void stop(void);
-
+    
+/*
+    /// @brief Set the voltage of the input
+    /// @param input between 0 and 3, correspondint voltage
+    /// @param value value to be set
     void setVoltage(uint8_t input, double value);
-    double getVoltage(uint8_t input);
 
-    // Event handler when conversion is received
+    /// @brief Get the current voltage of the input
+    /// @param input between 0 and 3, correspondint voltage
+    /// @return the voltage for this input
+    double getVoltage(uint8_t input);
+*/
+
+    /// @brief Event handler when conversion is received
     static void ads1115_event_handler(uint16_t input, double value);
+
+    /// @brief Event handler for periodic task
+    /// @brief Trigger the conversion
+    void trigger_conversion();
+
+    /// @brief register event handler for this cluster.
+    /// to pass args to the function, use std::bind
+    /// @param func pointer to the method ex: &Main::clusterHandler
+    /// @param instance instance of the object for this handler (ex: this)
+    /// @param channel of the ads converter that will trigger this
+    template<typename C>
+    void registerAdsHandler(void (C::* func)(double), C* instance, uint8_t channel) {
+        _adsCallbacks.insert({channel, std::bind(func,std::ref(*instance),std::placeholders::_1)}); 
+    }
     
 private:
     I2c _i2c_master;
     Ads1115 _ads;
-    double _voltage[4];
+    //double _voltage[4];
+    TickType_t _tickToWait;
+    PeriodicSoftTask* _periodicTask;
+
+    /// @brief Callback type, only one call back for each channel
+    typedef std::function<void(double)> adsCallback_t;
+    
+    // Map of call back first is channel, second is callback
+    std::map<uint8_t, adsCallback_t> _adsCallbacks;
+
+    void postEvent(uint8_t channel, double value);
+      
 
 }; // Main Class

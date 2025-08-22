@@ -25,7 +25,7 @@
 // Main class used for testing only
 class Main final
 {
-    GpioInput               _button {GPIO_NUM_9,true};
+    GpioInput               _button {(gpio_num_t)CONFIG_PIN_BUTTON, true};
     ButtonTask*             _buttonTask = nullptr;
 
     static BlinkTask*       _ledBlinking;

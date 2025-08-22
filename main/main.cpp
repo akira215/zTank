@@ -11,6 +11,7 @@
 
 #include <vector> // todel
 
+#include "waterPressureMeasCluster.h"
 
 #include "zbEndpoint.h" // to del
 
@@ -39,7 +40,8 @@ Main::Main()
 {
     //_zbDevice->getInstance();
     //esp_log_level_set("Main_app", ESP_LOG_DEBUG); 
-    esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG); 
+    esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG);
+    esp_log_level_set("Ads_driver", ESP_LOG_VERBOSE);
 }
 
 // static
@@ -207,7 +209,7 @@ void Main::setup(void)
     _buttonTask->setLongPressHandler(&longPressHandler,(void*)this);
 
     AdsDriver::getInstance().setup();
-    AdsDriver::getInstance().start();
+
 
 
     ESP_LOGD(TAG,"Creating Zigbee device");
@@ -217,11 +219,14 @@ void Main::setup(void)
     ZbEndPoint* measEp = new ZbEndPoint(1, 
                             ESP_ZB_HA_METER_INTERFACE_DEVICE_ID);
     
+    ZbEndPoint* upstreamEp = new ZbEndPoint(2, 
+                            ESP_ZB_HA_SIMPLE_SENSOR_DEVICE_ID);
+    
     ZbEndPoint* switchEp = new ZbEndPoint(3, 
                             ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID);
     
-    ZbEndPoint* lightEp = new ZbEndPoint(2, 
-                            ESP_ZB_HA_ON_OFF_LIGHT_DEVICE_ID);
+    //ZbEndPoint* lightEp = new ZbEndPoint(2, 
+    //                        ESP_ZB_HA_ON_OFF_LIGHT_DEVICE_ID);
     
 
 
@@ -246,7 +251,12 @@ void Main::setup(void)
     
     ZbIdentifyCluster* identifyClient = new ZbIdentifyCluster(true);
 
+    // Sensor clusters
     _fMeter = new WaterFlowMeasCluster();
+
+    // Upstream channel 2
+    WaterPressureMeasCluster* upstreamPressure = new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
+
 
     _tempMeasurement  = new ZbTemperatureMeasCluster(false,
                                 ESP_TEMP_SENSOR_MIN_VALUE,
@@ -265,12 +275,15 @@ void Main::setup(void)
 
     //ZbTemperatureMeasCluster* onOffCl  = new ZbTemperatureMeasCluster(*tempMeasurement);
     ZbOnOffCluster* onOffCl = new ZbOnOffCluster(true);
-    ZbOnOffCluster* onOfflightCl = new ZbOnOffCluster(false);
     
     measEp->addCluster(identifyServer4);
     measEp->addCluster(basicCl);
     measEp->addCluster(_fMeter);
     measEp->addCluster(_fMeter->getKfactorCluster());
+
+    upstreamEp->addCluster(identifyServer3);
+    upstreamEp->addCluster(upstreamPressure);
+    upstreamEp->addCluster(upstreamPressure->getKfactorCluster());
     
     
     tempEp->addCluster(identifyServer);
@@ -283,12 +296,11 @@ void Main::setup(void)
     switchEp->addCluster(onOffCl);
     //switchEp->addCluster(powerCl);
 
-    lightEp->addCluster(identifyServer3);
-    lightEp->addCluster(onOfflightCl);
+   
 
     _zbDevice->addEndPoint(*switchEp);
     _zbDevice->addEndPoint(*tempEp);
-    _zbDevice->addEndPoint(*lightEp);
+    _zbDevice->addEndPoint(*upstreamEp);
     _zbDevice->addEndPoint(*measEp);
 
     //_timeCluster->registerEventHandler(&Main::timeHandler, this);
@@ -303,6 +315,11 @@ void Main::setup(void)
     _zbDevice->start();
 
     vTaskDelay(pdMS_TO_TICKS(7000));
+
+    // Start AdsDriver after zigbee stack as it will start to change attributes
+    // 1000ms for each measures
+    AdsDriver::getInstance().start(1000);
+
     // Obtain the handle of a task from its name.
     _xHandle = xTaskGetHandle( "button_task" ); 
 
