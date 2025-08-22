@@ -201,12 +201,14 @@ void Main::setup(void)
 {
     ESP_LOGI(TAG,"---------- Setup ----------");
 
-    
-
     _button.enablePullup();
     _buttonTask = new ButtonTask (_button);
     _buttonTask->setShortPressHandler(&shortPressHandler);
     _buttonTask->setLongPressHandler(&longPressHandler,(void*)this);
+
+    AdsDriver::getInstance().setup();
+    AdsDriver::getInstance().start();
+
 
     ESP_LOGD(TAG,"Creating Zigbee device");
     _zbDevice = ZbNode::getInstance();

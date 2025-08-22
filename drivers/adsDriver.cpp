@@ -1,97 +1,140 @@
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+/*
+  zTank 
+  Repository: https://github.com/akira215/
+  License: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+  Author: Akira Shimahara
+*/
 
+//#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
 #include "adsDriver.h"
 
 #include <esp_log.h> // TODEL development purpose
 
-#include <iostream>
+#include <iostream> // TODEL development purpose
 
 static const char *TAG = "Ads_driver";
 
 
 
+// Static event handler
+void AdsDriver::ads1115_event_handler(uint16_t input, double value)
+{
+    ESP_LOGI(TAG, "Callback Main Ads1115 input: %d - value: %f", input-4, value);
+
+    // MUX_X_GND is between 4 and 7. To get the correct range, minus 4
+    AdsDriver::getInstance().setVoltage(input-4, value);
+}
+
+AdsDriver& AdsDriver::getInstance() 
+{
+    static AdsDriver instance; // Guaranteed to be destroyed.
+                                // Instantiated on first use.
+    return instance;
+}
+
+// Private constructor
 AdsDriver::AdsDriver(): 
-        i2c_master(I2C_MASTER_NUM, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO, true),
-        ads(&i2c_master,Ads1115::Addr_Gnd, ADS_I2C_FREQ_HZ)
+        _i2c_master(I2C_MASTER_NUM, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO, true),
+        _ads(&_i2c_master,Ads1115::Addr_Gnd, ADS_I2C_FREQ_HZ)
 {
     
 }
 
-void AdsDriver::run(void)
+void AdsDriver::start(void)
 {
     vTaskDelay(pdMS_TO_TICKS(2000));
-    ESP_LOGI(TAG, "Conversion : %f", ads.getVoltage(Ads1115::MUX_2_GND));
+    ESP_LOGI(TAG, "Conversion : %f", _ads.getVoltage(Ads1115::MUX_2_GND));
+}
+
+void AdsDriver::stop(void)
+{
+    //TODO implement
 }
 
 void AdsDriver::setup(void)
 {
-    Ads1115::Cfg_reg cfg = ads.getConfig();
-    ESP_LOGI(TAG, "Config: %d", cfg.reg.reg);
-    ESP_LOGI(TAG, "COMP QUE:    %x",cfg.bit.COMP_QUE);
-    ESP_LOGI(TAG, "COMP LAT:    %x",cfg.bit.COMP_LAT);
-    ESP_LOGI(TAG, "COMP POL:    %x",cfg.bit.COMP_POL);
-    ESP_LOGI(TAG, "COMP MODE:   %x",cfg.bit.COMP_MODE);
-    ESP_LOGI(TAG, "DataRate:    %x",cfg.bit.DR);
-    ESP_LOGI(TAG, "MODE:        %x",cfg.bit.MODE);
-    ESP_LOGI(TAG, "PGA:         %x",cfg.bit.PGA);
-    ESP_LOGI(TAG, "MUX:         %x",cfg.bit.MUX);
-    ESP_LOGI(TAG, "OS:          %x",cfg.bit.OS);
+    Ads1115::Cfg_reg cfg = _ads.getConfig();
+    ESP_LOGD(TAG, "Config: %d", cfg.reg.reg);
+    ESP_LOGD(TAG, "COMP QUE:    %x",cfg.bit.COMP_QUE);
+    ESP_LOGD(TAG, "COMP LAT:    %x",cfg.bit.COMP_LAT);
+    ESP_LOGD(TAG, "COMP POL:    %x",cfg.bit.COMP_POL);
+    ESP_LOGD(TAG, "COMP MODE:   %x",cfg.bit.COMP_MODE);
+    ESP_LOGD(TAG, "DataRate:    %x",cfg.bit.DR);
+    ESP_LOGD(TAG, "MODE:        %x",cfg.bit.MODE);
+    ESP_LOGD(TAG, "PGA:         %x",cfg.bit.PGA);
+    ESP_LOGD(TAG, "MUX:         %x",cfg.bit.MUX);
+    ESP_LOGD(TAG, "OS:          %x",cfg.bit.OS);
 
     Ads1115::reg2Bytes_t regData;
-    regData = ads.readRegister(Ads1115::reg_lo_thresh);
-    ESP_LOGI(TAG, "Reg Lo Thresh : %x", regData.reg);
-    ESP_LOGI(TAG, "Reg Lo MSB : %x", regData.MSB);
-    ESP_LOGI(TAG, "Reg Lo LSB : %x", regData.LSB);
+    regData = _ads.readRegister(Ads1115::reg_lo_thresh);
+    ESP_LOGD(TAG, "Reg Lo Thresh : %x", regData.reg);
+    ESP_LOGD(TAG, "Reg Lo MSB : %x", regData.MSB);
+    ESP_LOGD(TAG, "Reg Lo LSB : %x", regData.LSB);
 
-    regData = ads.readRegister(Ads1115::reg_hi_thresh);
-    ESP_LOGI(TAG, "Reg Hi Thresh : %x", regData.reg);
-    ESP_LOGI(TAG, "Reg Hi MSB : %x", regData.MSB);
-    ESP_LOGI(TAG, "Reg Hi LSB : %x", regData.LSB);
+    regData = _ads.readRegister(Ads1115::reg_hi_thresh);
+    ESP_LOGD(TAG, "Reg Hi Thresh : %x", regData.reg);
+    ESP_LOGD(TAG, "Reg Hi MSB : %x", regData.MSB);
+    ESP_LOGD(TAG, "Reg Hi LSB : %x", regData.LSB);
     
-    ESP_LOGI(TAG, "Changing config --------------");
+    ESP_LOGD(TAG, "Changing config --------------");
     regData.MSB = 0x01; 
     //ads.writeRegister(Ads1115::reg_hi_thresh,regData);
 
-    regData = ads.readRegister(Ads1115::reg_hi_thresh);
-    ESP_LOGI(TAG, "Reg Hi Thresh : %x", regData.reg);
+    regData = _ads.readRegister(Ads1115::reg_hi_thresh);
+    ESP_LOGD(TAG, "Reg Hi Thresh : %x", regData.reg);
 
-    ESP_LOGI(TAG, "Changing config --------------");
+    ESP_LOGD(TAG, "Changing config --------------");
     regData.MSB = 0x01; 
     //ads.writeRegister(Ads1115::reg_lo_thresh,regData);
 
-    regData = ads.readRegister(Ads1115::reg_lo_thresh);
-    ESP_LOGI(TAG, "Reg Lo Thresh : %x", regData.reg);
+    regData = _ads.readRegister(Ads1115::reg_lo_thresh);
+    ESP_LOGD(TAG, "Reg Lo Thresh : %x", regData.reg);
 
 
-    regData = ads.readRegister(Ads1115::reg_configuration);
-    ESP_LOGI(TAG, "Configuration : %x", regData.reg);
-    ESP_LOGI(TAG, "Cfg MSB : %x", regData.MSB);
-    ESP_LOGI(TAG, "Cfg LSB : %x", regData.LSB);
+    regData = _ads.readRegister(Ads1115::reg_configuration);
+    ESP_LOGD(TAG, "Configuration : %x", regData.reg);
+    ESP_LOGD(TAG, "Cfg MSB : %x", regData.MSB);
+    ESP_LOGD(TAG, "Cfg LSB : %x", regData.LSB);
 
-    ESP_LOGI(TAG, "Starting --------------");
+    ESP_LOGD(TAG, "Starting --------------");
  
 
-    ads.setPga(Ads1115::FSR_4_096); // Setting range for PGA optimized to 3.3V Power supply
-    ads.setSps(Ads1115::SPS_8); // Setting range for PGA optimized to 3.3V Power supply
+    _ads.setPga(Ads1115::FSR_4_096); // Setting range for PGA optimized to 3.3V Power supply
+    _ads.setSps(Ads1115::SPS_8); // Setting range for PGA optimized to 3.3V Power supply
 
     // event handler shall have signature void(uint16_t input, int16_t value)
-    ads.setReadyPin(GPIO_NUM_3, &ads1115_event_handler);
+    _ads.setReadyPin(GPIO_NUM_3, &ads1115_event_handler);
 
-    regData = ads.readRegister(Ads1115::reg_configuration);
-    ESP_LOGI(TAG, "Configuration : %x", regData.reg);
+    regData = _ads.readRegister(Ads1115::reg_configuration);
+    ESP_LOGD(TAG, "Configuration : %x", regData.reg);
 
-    regData = ads.readRegister(Ads1115::reg_lo_thresh);
-    ESP_LOGI(TAG, "Reg Lo Thresh : %x", regData.reg);
+    regData = _ads.readRegister(Ads1115::reg_lo_thresh);
+    ESP_LOGD(TAG, "Reg Lo Thresh : %x", regData.reg);
 
-    regData = ads.readRegister(Ads1115::reg_hi_thresh);
-    ESP_LOGI(TAG, "Reg Hi Thresh : %x", regData.reg);
+    regData = _ads.readRegister(Ads1115::reg_hi_thresh);
+    ESP_LOGD(TAG, "Reg Hi Thresh : %x", regData.reg);
 }
 
-void AdsDriver::ads1115_event_handler(uint16_t input, int16_t value)
+void AdsDriver::setVoltage(uint8_t input, double value)
 {
-    ESP_LOGI(TAG, "Callback Main Ads1115 input : %d", input);
-    ESP_LOGI(TAG, "Callback Main Ads1115 value : %d", value);
+    if (input>3)
+    {
+        ESP_LOGE(TAG, "Unable to write input > 3 (was %d)", input);
+        return;
+    }
+
+    _voltage[input] = value;
+}
+
+double AdsDriver::getVoltage(uint8_t input)
+{
+    if (input>3)
+    {
+        ESP_LOGE(TAG, "Unable to read input > 3 (was %d)", input);
+        return 0.0f;
+    }
+    return _voltage[input];
 }
 /*
 extern "C" void app_main(void)

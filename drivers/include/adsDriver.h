@@ -20,19 +20,33 @@
 #define ADS_I2C_TIMEOUT_MS          1000
 #define GPIO_INPUT_IO_READY         CONFIG_ADS1115_READY_INT   //!< GPIO number connect to the ready pin of the converter
 
-
+// Singleton class
 class AdsDriver final
 {
-public:
+    // Private constructor for singleton
     AdsDriver();
-    void run(void);
+public:
+    static AdsDriver& getInstance();
+
+    // Avoid copy constructors for singleton
+    AdsDriver(AdsDriver const&)       = delete;
+    void operator=(AdsDriver const&)  = delete;
+    
+    
     void setup(void);
 
+    void start(void);
+    void stop(void);
+
+    void setVoltage(uint8_t input, double value);
+    double getVoltage(uint8_t input);
+
     // Event handler when conversion is received
-    static void ads1115_event_handler(uint16_t input, int16_t value);
+    static void ads1115_event_handler(uint16_t input, double value);
     
 private:
-    I2c i2c_master;
-    Ads1115 ads;
+    I2c _i2c_master;
+    Ads1115 _ads;
+    double _voltage[4];
 
 }; // Main Class

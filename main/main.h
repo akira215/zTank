@@ -5,6 +5,8 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
+#include "adsDriver.h" // to del
+
 //#include "waterMeterCluster.h" // to del
 #include "waterFlowMeasCluster.h" // to del
 
