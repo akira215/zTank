@@ -42,6 +42,7 @@ Main::Main()
     //esp_log_level_set("Main_app", ESP_LOG_DEBUG); 
     esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG);
     esp_log_level_set("Ads_driver", ESP_LOG_VERBOSE);
+    esp_log_level_set("EventLoop", ESP_LOG_DEBUG);
 }
 
 // static

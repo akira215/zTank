@@ -48,14 +48,14 @@ public:
     
 /*
     /// @brief Set the voltage of the input
-    /// @param input between 0 and 3, correspondint voltage
+    /// @param  channel between 0 and 3, correspondint voltage
     /// @param value value to be set
-    void setVoltage(uint8_t input, double value);
+    void setVoltage(uint8_t channel, double value);
 
     /// @brief Get the current voltage of the input
-    /// @param input between 0 and 3, correspondint voltage
+    /// @param  channel between 0 and 3, correspondint voltage
     /// @return the voltage for this input
-    double getVoltage(uint8_t input);
+    double getVoltage(uint8_t  channel);
 */
 
     /// @brief Event handler when conversion is received
@@ -69,7 +69,7 @@ public:
     /// to pass args to the function, use std::bind
     /// @param func pointer to the method ex: &Main::clusterHandler
     /// @param instance instance of the object for this handler (ex: this)
-    /// @param channel of the ads converter that will trigger this
+    /// @param channel of the ads converter that will trigger this 
     template<typename C>
     void registerAdsHandler(void (C::* func)(double), C* instance, uint8_t channel) {
         _adsCallbacks.insert({channel, std::bind(func,std::ref(*instance),std::placeholders::_1)}); 
@@ -81,6 +81,8 @@ private:
     //double _voltage[4];
     TickType_t _tickToWait;
     PeriodicSoftTask* _periodicTask;
+
+    double _voltage[4];
 
     /// @brief Callback type, only one call back for each channel
     typedef std::function<void(double)> adsCallback_t;

@@ -24,8 +24,6 @@ void AdsDriver::ads1115_event_handler(uint16_t input, double value)
     // Post event to update the attribute of concerning registered clusters
     AdsDriver::getInstance().postEvent(input-4, value);
 
-    // MUX_X_GND is between 4 and 7. To get the correct range, minus 4
-    //AdsDriver::getInstance().setVoltage(input-4, value);
 }
 
 // Event handler for periodic soft task
@@ -107,46 +105,37 @@ void AdsDriver::setup(void)
     
 }
 /*
-void AdsDriver::setVoltage(uint8_t input, double value)
+void AdsDriver::setVoltage(uint8_t channel, double value)
 {
-    if (input>3)
+    if ( channel>3)
     {
-        ESP_LOGE(ADS_TAG, "Unable to write input > 3 (was %d)", input);
+        ESP_LOGE(ADS_TAG, "Unable to write  channel > 3 (was %d)",  channel);
         return;
     }
 
-    _voltage[input] = value;
+    _voltage[ channel] = value;
 }
 
-double AdsDriver::getVoltage(uint8_t input)
+double AdsDriver::getVoltage(uint8_t  channel)
 {
-    if (input>3)
+    if ( channel>3)
     {
-        ESP_LOGE(ADS_TAG, "Unable to read input > 3 (was %d)", input);
+        ESP_LOGE(ADS_TAG, "Unable to read  channel > 3 (was %d)",  channel);
         return 0.0f;
     }
-    return _voltage[input];
+    return _voltage[channel];
 }
 */
 
 /// Events ////////////////////////////////////////////////////////////////////////////
-//void AdsDriver::postEvent(clusterEvent_t event, std::vector<attribute_t> attrs)
 void AdsDriver::postEvent(uint8_t channel, double value)
 {
 
     if(_adsCallbacks.contains(channel)) {
         ESP_LOGV(ADS_TAG, "Callback channel %d is found - value: %f", channel, value);
-        adsCallback_t cb = _adsCallbacks.at(channel);
-        ZbNode::_eventLoop->enqueue(std::bind(std::ref(cb), value));
+        ZbNode::_eventLoop->enqueue(std::bind(std::ref(_adsCallbacks.at(channel)), value));
     } else {
-        // No callback registred for this channel
+        ESP_LOGV(ADS_TAG, "No Callback registered for channel %d", channel);
     }
-    
-/*
-    // Call all the registered callback Id
-    for (auto & cb : _clusterEventHandlers) {
-        //cb(event, attrId, value);
-        ZbNode::_eventLoop->enqueue(std::bind(std::ref(cb), event, std::move(attrs)));
-    }
-        */
+        
 }
