@@ -13,7 +13,7 @@
 
 #include <iostream> // TODEL development purpose
 
-static const char *ADS_TAG = "Ads_driver";
+static const char *ADS_TAG = "AdsDriver";
 
 
 // Static event handler
@@ -135,7 +135,7 @@ void AdsDriver::postEvent(uint8_t channel, double value)
         ESP_LOGV(ADS_TAG, "Callback channel %d is found - value: %f", channel, value);
         ZbNode::_eventLoop->enqueue(std::bind(std::ref(_adsCallbacks.at(channel)), value));
     } else {
-        ESP_LOGV(ADS_TAG, "No Callback registered for channel %d", channel);
+        ESP_LOGD(ADS_TAG, "No Callback registered for channel %d", channel);
     }
         
 }

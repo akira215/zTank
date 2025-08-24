@@ -13,6 +13,7 @@
 /// @brief Driver to read pressure from ADS1115 analog converter
 class WaterPressureMeasCluster : public ZbPressureMeasCluster
 {
+    uint8_t                 _channel;
     PersistedValue<float_t> _Kfactor;
     ZbAnalogValueCluster*   _kfactorCluster = nullptr;
 public:

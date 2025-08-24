@@ -5,6 +5,9 @@
   Author: Akira Shimahara
 */
 
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#include <esp_log.h> // TODEL development purpose
+
 #include "waterPressureMeasCluster.h"
 #include "adsDriver.h"
 
@@ -17,26 +20,35 @@
 // Static handler when conversion is received
 void WaterPressureMeasCluster::adc_event_handler(double value)
 {
-    int16_t attr = value*1000*_Kfactor;
-    std::cout << "WaterPressure ADC Callback - value: " << value << " - attr " << attr << std::endl;
+    int16_t attr = (int16_t)(value * 1000.0 * _Kfactor);
+
+    ESP_LOGV(ZCLUSTER_TAG, "WaterPressure ch %d ADC Callback - value: %f - attr: %d", 
+                _channel, value, attr);
+
     setPressureMeasuredValue(attr);
 }
 
 
 
 WaterPressureMeasCluster::WaterPressureMeasCluster(uint8_t channel):
-                                ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
-                                _Kfactor(std::string("pFactor").append(std::to_string(channel)), 1.0f)
+                        ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
+                        _channel(channel),
+                         _Kfactor(std::string("pFactor").append(std::to_string(channel)), 1.0f)
 {
+    ESP_LOGV(ZCLUSTER_TAG, 
+                "WaterPressureMeas Constructor channel %d - pFactor%d = %f", 
+                channel, channel, _Kfactor);
+    
     // setup the embedded pFactor cluster (analog value)
     _kfactorCluster = new ZbAnalogValueCluster(false, false, _Kfactor);
-                      
+    
     _kfactorCluster->registerEventHandler(&WaterPressureMeasCluster::setKfactor, this);
 
     // Register the callback handler for ADC converter
     // WARNING, do not start the ADC driver prior to start the zigbee stack
     // Otherwise it will try to set an attribute and will fail
-    AdsDriver::getInstance().registerAdsHandler(&WaterPressureMeasCluster::adc_event_handler, this, channel);
+    AdsDriver::getInstance().registerAdsHandler(
+                    &WaterPressureMeasCluster::adc_event_handler, this, channel);
 }
 
 ZbCluster* WaterPressureMeasCluster::getKfactorCluster()

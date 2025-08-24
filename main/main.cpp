@@ -38,11 +38,15 @@ Main App;
 
 Main::Main()
 {
-    //_zbDevice->getInstance();
-    //esp_log_level_set("Main_app", ESP_LOG_DEBUG); 
-    esp_log_level_set("ZB_CPP", ESP_LOG_DEBUG);
-    esp_log_level_set("Ads_driver", ESP_LOG_VERBOSE);
+    // Setting the log level for each module
+    esp_log_level_set("Main_app", ESP_LOG_DEBUG);  // Put verbose to check available stack
+    esp_log_level_set("ZbNode", ESP_LOG_DEBUG); 
+    esp_log_level_set("ZbEndpoint", ESP_LOG_VERBOSE);
+    esp_log_level_set("ZbNode", ESP_LOG_VERBOSE);
+    esp_log_level_set("AdsDriver", ESP_LOG_VERBOSE);
+    esp_log_level_set("ZbCluster", ESP_LOG_VERBOSE);
     esp_log_level_set("EventLoop", ESP_LOG_DEBUG);
+    esp_log_level_set("PersistedValue", ESP_LOG_VERBOSE);
 }
 
 // static
@@ -217,13 +221,17 @@ void Main::setup(void)
     _zbDevice = ZbNode::getInstance();
     _zbDevice->registerNodeEventHandler(&Main::zbDeviceEventHandler, this);
 
+    // Endpoints Construct ////////////////////////////////////////////////
     ZbEndPoint* measEp = new ZbEndPoint(1, 
                             ESP_ZB_HA_METER_INTERFACE_DEVICE_ID);
     
     ZbEndPoint* upstreamEp = new ZbEndPoint(2, 
                             ESP_ZB_HA_SIMPLE_SENSOR_DEVICE_ID);
+
+    ZbEndPoint* downstreamEp = new ZbEndPoint(3, 
+                            ESP_ZB_HA_SIMPLE_SENSOR_DEVICE_ID);
     
-    ZbEndPoint* switchEp = new ZbEndPoint(3, 
+    ZbEndPoint* switchEp = new ZbEndPoint(5, 
                             ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID);
     
     //ZbEndPoint* lightEp = new ZbEndPoint(2, 
@@ -233,7 +241,9 @@ void Main::setup(void)
 
     ZbEndPoint* tempEp = new ZbEndPoint(SENSOR_ENDPOINT, 
                             ESP_ZB_HA_TEMPERATURE_SENSOR_DEVICE_ID);
+
     
+    // Clusters Construct ////////////////////////////////////////////////
     ZbBasicCluster* basicCl = new ZbBasicCluster(false,
                         ESP_ZB_ZCL_BASIC_ZCL_VERSION_DEFAULT_VALUE,
                         (uint8_t)0x01);
@@ -247,16 +257,16 @@ void Main::setup(void)
                                     2400, 25);
 */
 
-    ZbIdentifyCluster* identifyServer = new ZbIdentifyCluster();
-   
-    
-    ZbIdentifyCluster* identifyClient = new ZbIdentifyCluster(true);
-
     // Sensor clusters
     _fMeter = new WaterFlowMeasCluster();
 
     // Upstream channel 2
-    WaterPressureMeasCluster* upstreamPressure = new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
+    WaterPressureMeasCluster* upstreamPressure = 
+                        new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
+    
+    // Downstream channel 3
+    WaterPressureMeasCluster* downstreamPressure = 
+                        new WaterPressureMeasCluster(CONFIG_DOWNSTREAM_PRESSURE_CH);
 
 
     _tempMeasurement  = new ZbTemperatureMeasCluster(false,
@@ -268,44 +278,58 @@ void Main::setup(void)
     _timeClient = new ZbTimeClusterClient();
 
     ESP_LOGI(TAG,"---------------- Register ------------------------");
-
+    
+    ZbIdentifyCluster* identifyServer = new ZbIdentifyCluster();
+    ZbIdentifyCluster* identifyClient = new ZbIdentifyCluster(true);
     ZbIdentifyCluster* identifyServer2 = new ZbIdentifyCluster(*identifyServer);
     ZbIdentifyCluster* identifyServer3 = new ZbIdentifyCluster(*identifyServer);
     ZbIdentifyCluster* identifyServer4 = new ZbIdentifyCluster(*identifyServer);
+    ZbIdentifyCluster* identifyServer5 = new ZbIdentifyCluster(*identifyServer);
     
 
     //ZbTemperatureMeasCluster* onOffCl  = new ZbTemperatureMeasCluster(*tempMeasurement);
     ZbOnOffCluster* onOffCl = new ZbOnOffCluster(true);
     
-    measEp->addCluster(identifyServer4);
+    
+    // Attaching Clusters  ////////////////////////////////////////////////
+    measEp->addCluster(identifyServer);
     measEp->addCluster(basicCl);
     measEp->addCluster(_fMeter);
     measEp->addCluster(_fMeter->getKfactorCluster());
 
-    upstreamEp->addCluster(identifyServer3);
+    upstreamEp->addCluster(identifyServer2);
     upstreamEp->addCluster(upstreamPressure);
     upstreamEp->addCluster(upstreamPressure->getKfactorCluster());
+
+    downstreamEp->addCluster(identifyServer3);
+    downstreamEp->addCluster(downstreamPressure);
+    downstreamEp->addCluster(downstreamPressure->getKfactorCluster());
     
     
-    tempEp->addCluster(identifyServer);
+    tempEp->addCluster(identifyServer4);
     tempEp->addCluster(identifyClient);
     tempEp->addCluster(_tempMeasurement);
 
     tempEp->addCluster(_timeClient);
 
-    switchEp->addCluster(identifyServer2);
+    switchEp->addCluster(identifyServer5);
     switchEp->addCluster(onOffCl);
     //switchEp->addCluster(powerCl);
 
    
-
+    // Attaching Enpoints  ////////////////////////////////////////////////
+    _zbDevice->addEndPoint(*measEp);
+    _zbDevice->addEndPoint(*upstreamEp);
+    _zbDevice->addEndPoint(*downstreamEp);
     _zbDevice->addEndPoint(*switchEp);
     _zbDevice->addEndPoint(*tempEp);
-    _zbDevice->addEndPoint(*upstreamEp);
-    _zbDevice->addEndPoint(*measEp);
-
+    
+    
+    // Get task handles   
     //_timeCluster->registerEventHandler(&Main::timeHandler, this);
     _eventLoopHandle = xTaskGetHandle( "ZbEventLoop" );
+    // Obtain the handle of a task from its name.
+    _xHandle = xTaskGetHandle( "button_task" ); 
     
     //driver_init();
 
@@ -321,31 +345,26 @@ void Main::setup(void)
     // 1000ms for each measures
     AdsDriver::getInstance().start(1000);
 
-    // Obtain the handle of a task from its name.
-    _xHandle = xTaskGetHandle( "button_task" ); 
-
 }
 
 
 
 void Main::run(void)
 {
-    /*
-    ESP_LOGI(TAG,"Main task high water mark %d", 
+    
+    ESP_LOGV(TAG,"Main task high water mark %d", 
                             uxTaskGetStackHighWaterMark(NULL));
 
-    ESP_LOGI(TAG,"Counter pin level read %d", _fMeter->getPinLevel());
-
-    ESP_LOGI(TAG,"Event Loop task high water mark %d", 
+    ESP_LOGV(TAG,"Event Loop task high water mark %d", 
                             uxTaskGetStackHighWaterMark(_eventLoopHandle));
-*/
+    
+    ESP_LOGV(TAG,"Button task high water mark %d", uxTaskGetStackHighWaterMark(_xHandle));
+    ESP_LOGV(TAG,"Zigbee task high water mark %d", 
+                            uxTaskGetStackHighWaterMark(_zbDevice->getZbTask()));
+
 /*
     ESP_LOGI(TAG,"Task Handle %lx", (uint32_t)_xHandle);
     ESP_LOGI(TAG,"Button task high water mark %d", uxTaskGetStackHighWaterMark(_xHandle));
-    ESP_LOGI(TAG,"Zigbee task high water mark %d", 
-                            uxTaskGetStackHighWaterMark(_zbDevice->getZbTask()));
-    ESP_LOGI(TAG,"Main task high water mark %d", 
-                            uxTaskGetStackHighWaterMark(NULL));
 */
 
     vTaskDelay(pdMS_TO_TICKS(2000));
