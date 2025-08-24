@@ -20,7 +20,7 @@
 // Static handler when conversion is received
 void WaterPressureMeasCluster::adc_event_handler(double value)
 {
-    int16_t attr = (int16_t)(value * 1000.0 * _Kfactor);
+    int16_t attr = (int16_t)(value * _Kfactor);
 
     ESP_LOGV(ZCLUSTER_TAG, "WaterPressure ch %d ADC Callback - value: %f - attr: %d", 
                 _channel, value, attr);
@@ -29,11 +29,12 @@ void WaterPressureMeasCluster::adc_event_handler(double value)
 }
 
 
-
+// pFactor = 187.97 with shunt = 133R and sensor max 0.5 MPa:
+// Imax = 20mA => Umax = 2.66V (=> 500 Pa) 500 / 2.66 = 187.97
 WaterPressureMeasCluster::WaterPressureMeasCluster(uint8_t channel):
                         ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
                         _channel(channel),
-                         _Kfactor(std::string("pFactor").append(std::to_string(channel)), 1.0f)
+                         _Kfactor(std::string("pFactor").append(std::to_string(channel)), 187.97f)
 {
     ESP_LOGV(ZCLUSTER_TAG, 
                 "WaterPressureMeas Constructor channel %d - pFactor%d = %f", 
