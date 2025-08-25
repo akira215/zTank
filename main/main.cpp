@@ -11,8 +11,6 @@
 
 #include <vector> // todel
 
-#include "waterPressureMeasCluster.h"
-
 #include "zbEndpoint.h" // to del
 
 /*
@@ -43,7 +41,7 @@ Main::Main()
     esp_log_level_set("ZbNode", ESP_LOG_DEBUG); 
     esp_log_level_set("ZbEndpoint", ESP_LOG_VERBOSE);
     esp_log_level_set("ZbNode", ESP_LOG_VERBOSE);
-    esp_log_level_set("AdsDriver", ESP_LOG_VERBOSE);
+    esp_log_level_set("AdsDriver", ESP_LOG_INFO);
     esp_log_level_set("ZbCluster", ESP_LOG_VERBOSE);
     esp_log_level_set("EventLoop", ESP_LOG_DEBUG);
     esp_log_level_set("PersistedValue", ESP_LOG_VERBOSE);
@@ -222,13 +220,13 @@ void Main::setup(void)
     _zbDevice->registerNodeEventHandler(&Main::zbDeviceEventHandler, this);
 
     // Endpoints Construct ////////////////////////////////////////////////
-    ZbEndPoint* measEp = new ZbEndPoint(1, 
+    ZbEndPoint* measEp = new ZbEndPoint(CONFIG_WATERMETER_EP, 
                             ESP_ZB_HA_METER_INTERFACE_DEVICE_ID);
     
-    ZbEndPoint* upstreamEp = new ZbEndPoint(2, 
+    ZbEndPoint* upstreamEp = new ZbEndPoint(CONFIG_UPSTREAM_EP, 
                             ESP_ZB_HA_SIMPLE_SENSOR_DEVICE_ID);
 
-    ZbEndPoint* downstreamEp = new ZbEndPoint(3, 
+    ZbEndPoint* downstreamEp = new ZbEndPoint(CONFIG_DOWNSTREAM_EP, 
                             ESP_ZB_HA_SIMPLE_SENSOR_DEVICE_ID);
     
     ZbEndPoint* switchEp = new ZbEndPoint(5, 
@@ -260,14 +258,13 @@ void Main::setup(void)
     // Sensor clusters
     _fMeter = new WaterFlowMeasCluster();
 
+
     // Upstream channel 2
-    WaterPressureMeasCluster* upstreamPressure = 
-                        new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
+    _upstreamPressure = new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
     
     // Downstream channel 3
-    WaterPressureMeasCluster* downstreamPressure = 
-                        new WaterPressureMeasCluster(CONFIG_DOWNSTREAM_PRESSURE_CH);
-
+    _downstreamPressure = new WaterPressureMeasCluster(CONFIG_DOWNSTREAM_PRESSURE_CH);
+    
 
     _tempMeasurement  = new ZbTemperatureMeasCluster(false,
                                 ESP_TEMP_SENSOR_MIN_VALUE,
@@ -298,13 +295,12 @@ void Main::setup(void)
     measEp->addCluster(_fMeter->getKfactorCluster());
 
     upstreamEp->addCluster(identifyServer2);
-    upstreamEp->addCluster(upstreamPressure);
-    upstreamEp->addCluster(upstreamPressure->getKfactorCluster());
+    upstreamEp->addCluster(_upstreamPressure);
+    upstreamEp->addCluster(_upstreamPressure->getKfactorCluster());
 
     downstreamEp->addCluster(identifyServer3);
-    downstreamEp->addCluster(downstreamPressure);
-    downstreamEp->addCluster(downstreamPressure->getKfactorCluster());
-    
+    downstreamEp->addCluster(_downstreamPressure);
+    downstreamEp->addCluster(_downstreamPressure->getKfactorCluster());
     
     tempEp->addCluster(identifyServer4);
     tempEp->addCluster(identifyClient);
@@ -343,7 +339,7 @@ void Main::setup(void)
 
     // Start AdsDriver after zigbee stack as it will start to change attributes
     // 1000ms for each measures
-    AdsDriver::getInstance().start(1000);
+    AdsDriver::getInstance().start(CONFIG_DELAY_ADS_DRIVER);
 
 }
 

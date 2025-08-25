@@ -39,8 +39,8 @@ WaterFlowMeasCluster::WaterFlowMeasCluster():
     // setup the embedded Kfactor cluster (analog value)
     //float_t currentFactor = _Kfactor;
     _kfactorCluster = new ZbAnalogValueCluster(false, false, _Kfactor);
-    _kfactorCluster->addAttribute(ESP_ZB_ZCL_ATTR_ANALOG_VALUE_DESCRIPTION_ID, 
-                                            (void*)K_FACTOR_ATTR);
+    //_kfactorCluster->addAttribute(ESP_ZB_ZCL_ATTR_ANALOG_VALUE_DESCRIPTION_ID, 
+    //                                        (void*)K_FACTOR_ATTR);
                       
     
     _kfactorCluster->registerEventHandler(&WaterFlowMeasCluster::setKfactor, this);
@@ -118,10 +118,12 @@ void WaterFlowMeasCluster::setKfactor(clusterEvent_t event, std::vector<attribut
         uint16_t attrId = el.attrId;
         void* value = el.value;
         if (attrId == ESP_ZB_ZCL_ATTR_ANALOG_VALUE_PRESENT_VALUE_ID){
-            std::cout << "setKfactor event : " << event << std::endl;
+            ESP_LOGV(ZCLUSTER_TAG, "WaterFlowMeas setKfactor event : %d", 
+                event);
 
             float_t currentFactor = *(static_cast<float_t*>(value));
-            std::cout << "setKfactor currentFactor : " << currentFactor << std::endl;
+            ESP_LOGV(ZCLUSTER_TAG, "WaterFlowMeas setKfactor currentFactor : : %f", 
+                currentFactor);
             
             //_kfactorCluster.setAttribute(ESP_ZB_ZCL_ATTR_ANALOG_VALUE_PRESENT_VALUE_ID,
             //                                (void*)&currentFactor);

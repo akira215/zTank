@@ -3,6 +3,7 @@ build/
 doc/
 .vscode/
 .devcontainer/
+json/
 managed_components/
 debug.log
 sdkconfig

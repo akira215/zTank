@@ -8,7 +8,8 @@
 #include "adsDriver.h" // to del
 
 //#include "waterMeterCluster.h" // to del
-#include "waterFlowMeasCluster.h" // to del
+#include "waterFlowMeasCluster.h" 
+#include "waterPressureMeasCluster.h"
 
 #include "zbHaCluster.h"
 #include "zbTimeClusterClient.h" 
@@ -59,6 +60,8 @@ private:
     TaskHandle_t                _eventLoopHandle    = nullptr;
 
     WaterFlowMeasCluster*       _fMeter             = nullptr;
+    WaterPressureMeasCluster*   _upstreamPressure   = nullptr;
+    WaterPressureMeasCluster*   _downstreamPressure = nullptr;
 
 
 }; // Main Class

@@ -34,7 +34,8 @@ void WaterPressureMeasCluster::adc_event_handler(double value)
 WaterPressureMeasCluster::WaterPressureMeasCluster(uint8_t channel):
                         ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
                         _channel(channel),
-                         _Kfactor(std::string("pFactor").append(std::to_string(channel)), 187.97f)
+                        //_Kfactor(std::string("pFactor").append(std::to_string(channel)), 187.97f)
+                        _Kfactor(std::string("pFactor").append(channel == 2 ? std::string("A") : std::string("B")), 187.97f)
 {
     ESP_LOGV(ZCLUSTER_TAG, 
                 "WaterPressureMeas Constructor channel %d - pFactor%d = %f", 
@@ -66,10 +67,12 @@ void WaterPressureMeasCluster::setKfactor(clusterEvent_t event, std::vector<attr
         uint16_t attrId = el.attrId;
         void* value = el.value;
         if (attrId == ESP_ZB_ZCL_ATTR_ANALOG_VALUE_PRESENT_VALUE_ID){
-            std::cout << "setKfactor event : " << event << std::endl;
+            ESP_LOGV(ZCLUSTER_TAG, "WaterPressure setKfactor event : %d", 
+                event);
 
             float_t currentFactor = *(static_cast<float_t*>(value));
-            std::cout << "setKfactor currentFactor : " << currentFactor << std::endl;
+            ESP_LOGV(ZCLUSTER_TAG, "WaterPressure setKfactor currentFactor : : %f", 
+                currentFactor);
             
             //_kfactorCluster.setAttribute(ESP_ZB_ZCL_ATTR_ANALOG_VALUE_PRESENT_VALUE_ID,
             //                                (void*)&currentFactor);
