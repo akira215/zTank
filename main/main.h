@@ -54,7 +54,7 @@ private:
     
     ZbNode*                     _zbDevice           = nullptr;
     ZbTemperatureMeasCluster*   _tempMeasurement    = nullptr;
-    ZbTimeClusterClient*         _timeClient        = nullptr;
+    ZbTimeClusterClient*        _timeClient        = nullptr;
 
     TaskHandle_t                _xHandle            = nullptr;
     TaskHandle_t                _eventLoopHandle    = nullptr;

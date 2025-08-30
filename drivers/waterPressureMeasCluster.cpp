@@ -12,6 +12,7 @@
 #include "adsDriver.h"
 
 #include <string>
+#include <math.h>
 
 
 #include <iostream> //TODEL
@@ -20,7 +21,7 @@
 // Static handler when conversion is received
 void WaterPressureMeasCluster::adc_event_handler(double value)
 {
-    int16_t attr = (int16_t)(value * _Kfactor);
+    int16_t attr = (int16_t)(round(value * _Kfactor));
 
     ESP_LOGV(ZCLUSTER_TAG, "WaterPressure ch %d ADC Callback - value: %f - attr: %d", 
                 _channel, value, attr);
@@ -35,15 +36,18 @@ WaterPressureMeasCluster::WaterPressureMeasCluster(uint8_t channel):
                         ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
                         _channel(channel),
                         //_Kfactor(std::string("pFactor").append(std::to_string(channel)), 187.97f)
-                        _Kfactor(std::string("pFactor").append(channel == 2 ? std::string("A") : std::string("B")), 187.97f)
+                        _Kfactor(std::string("pFactor").append(std::to_string(channel)), 187.97f)
 {
+    
+    // PersistedValue::getValue() is required in the macro ESP_LOGX otherwise the PersistedValue obj is destroyed
+    // and built again
     ESP_LOGV(ZCLUSTER_TAG, 
                 "WaterPressureMeas Constructor channel %d - pFactor%d = %f", 
-                channel, channel, _Kfactor);
+                channel, channel, _Kfactor.getValue()); 
     
     // setup the embedded pFactor cluster (analog value)
     _kfactorCluster = new ZbAnalogValueCluster(false, false, _Kfactor);
-    
+
     _kfactorCluster->registerEventHandler(&WaterPressureMeasCluster::setKfactor, this);
 
     // Register the callback handler for ADC converter

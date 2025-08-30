@@ -214,7 +214,6 @@ void Main::setup(void)
     AdsDriver::getInstance().setup();
 
 
-
     ESP_LOGD(TAG,"Creating Zigbee device");
     _zbDevice = ZbNode::getInstance();
     _zbDevice->registerNodeEventHandler(&Main::zbDeviceEventHandler, this);
@@ -257,7 +256,6 @@ void Main::setup(void)
 
     // Sensor clusters
     _fMeter = new WaterFlowMeasCluster();
-
 
     // Upstream channel 2
     _upstreamPressure = new WaterPressureMeasCluster(CONFIG_UPSTREAM_PRESSURE_CH);
