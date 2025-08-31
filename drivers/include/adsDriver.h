@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include <functional>
 #include <map>
 
@@ -93,4 +91,4 @@ private:
     void postEvent(uint8_t channel, double value);
       
 
-}; // Main Class
+}; // adsDriver Class

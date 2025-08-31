@@ -41,10 +41,25 @@ menu "ADS converter config"
             Check the shematic to get the correct ADC channel regarding 
             connecting pin on the terminal block.
     
+    config WATER_LEVEL_CH
+        int "ADC Channel for Water level sensor"
+        range 0 3
+        default 1
+        help
+            Check the shematic to get the correct ADC channel regarding 
+            connecting pin on the terminal block.
+    
     config DELAY_ADS_DRIVER
         int "Delay in ms between 2 queries to ADS to perform conversions"
         range 100 60000
         default 1000
         help
             This will query the conversion for all the 4 channels at this delay.
+
+    config DELAY_TEMPERATURE_DRIVER
+        int "Delay in ms between 2 queries to ESP internal temperature sensor"
+        range 100 60000
+        default 1000
+        help
+            This will set up a periodic task to read this temperature.
 endmenu

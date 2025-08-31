@@ -38,10 +38,24 @@ menu "Zigbee endpoints"
             Zigbee endpoint for upstream pressure.
     
     config DOWNSTREAM_EP
-        int "downstream Endpoint"
+        int "Downstream Endpoint"
         range 0 1024
         default 3
         help
             Zigbee endpoint for downstream pressure.
+
+    config WATER_LEVEL_EP
+        int "Water level Endpoint"
+        range 0 1024
+        default 4
+        help
+            Zigbee endpoint for water level.
+    
+    config TEMPERATURE_EP
+        int "Temperature Endpoint"
+        range 0 1024
+        default 5
+        help
+            Zigbee endpoint for Temperature sensor.
 endmenu
 

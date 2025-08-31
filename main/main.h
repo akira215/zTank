@@ -5,17 +5,17 @@
 #include "buttonTask.h" // to del
 #include "blinkTask.h" // to del
 
-#include "adsDriver.h" // to del
+#include "adsDriver.h"
+#include "tempCluster.h"
 
-//#include "waterMeterCluster.h" // to del
 #include "waterFlowMeasCluster.h" 
 #include "waterPressureMeasCluster.h"
+#include "waterLevelMeasCluster.h"
+
 
 #include "zbHaCluster.h"
 #include "zbTimeClusterClient.h" 
 
-
-#define SENSOR_ENDPOINT          10      /* esp temperature sensor device endpoint, used for temperature measurement */
 /* Attribute values in ZCL string format
  * The string should be started with the length of its own.
  */
@@ -44,7 +44,6 @@ public:
     static void longPressHandler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
     static void identifyHandler(uint16_t attrId, void* value);
-    static void lightOnOffHandler(uint16_t attrId, void* value);
 
 private:
     /// @brief Helper to flash led
@@ -53,15 +52,16 @@ private:
     static void ledFlash(uint64_t speed);
     
     ZbNode*                     _zbDevice           = nullptr;
-    ZbTemperatureMeasCluster*   _tempMeasurement    = nullptr;
-    ZbTimeClusterClient*        _timeClient        = nullptr;
+    ZbTimeClusterClient*        _timeClient         = nullptr;
 
-    TaskHandle_t                _xHandle            = nullptr;
+    TaskHandle_t                _xButtonHandle      = nullptr;
     TaskHandle_t                _eventLoopHandle    = nullptr;
 
     WaterFlowMeasCluster*       _fMeter             = nullptr;
     WaterPressureMeasCluster*   _upstreamPressure   = nullptr;
     WaterPressureMeasCluster*   _downstreamPressure = nullptr;
+    WaterLevelMeasCluster*      _waterLevel         = nullptr;
+    TempCluster*                _tempMeasurement    = nullptr;
 
 
 }; // Main Class
