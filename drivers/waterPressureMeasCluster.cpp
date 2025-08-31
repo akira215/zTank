@@ -12,10 +12,7 @@
 #include "adsDriver.h"
 
 #include <string>
-#include <math.h>
-
-
-#include <iostream> //TODEL
+#include <math.h> // for round
 
 
 // Static handler when conversion is received
@@ -31,7 +28,8 @@ void WaterPressureMeasCluster::adc_event_handler(double value)
 
 
 // pFactor = 187.97 with shunt = 133R and sensor max 0.5 MPa:
-// Imax = 20mA => Umax = 2.66V (=> 500 Pa) 500 / 2.66 = 187.97
+// Imax = 20mA => Umax = 2.66V (=> 500 kPa) 500 / 2.66 = 187.97
+// measuredValue is send in kPa 
 WaterPressureMeasCluster::WaterPressureMeasCluster(uint8_t channel):
                         ZbPressureMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
                         _channel(channel),

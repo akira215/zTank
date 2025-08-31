@@ -7,7 +7,7 @@
 
 #include "waterFlowMeasCluster.h"
 
-#include <iostream> //TODEL
+#include <esp_log.h> 
 
 //Static
 void WaterFlowMeasCluster::impulsionHandler(void *handler_args, esp_event_base_t base, 
@@ -20,17 +20,17 @@ void WaterFlowMeasCluster::impulsionHandler(void *handler_args, esp_event_base_t
        instance->_pulseCount += 1; 
        instance->setFlowMeasuredValue(instance->_pulseCount);
     //}
+    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow impulsion,  _pulseCount %d ", 
+                        instance->_pulseCount);
 
-    std::cout << "Impulsion: _pulseCount " << instance->_pulseCount << std::endl;
 
 }
-/*
-void WaterMeterCluster::reportCurrentSummation()
-{
-    std::cout << "Periodic Task "  << +_updatePeriod << std::endl;
-}
-*/
 
+
+// Device sent its tick without regarding kFactor. It only sent the number of tick
+// and reset its counter to 0 each time the attribute is reported
+// we use kFactor here only to save in to device NVS so
+// that z2m will know this value whatever it happpen (restart, device quit network, ...)
 WaterFlowMeasCluster::WaterFlowMeasCluster():
                                 ZbFlowMeasCluster(false, 0, 0, ESP_ZB_ZCL_VALUE_U16_NONE - 1),
                                 _Kfactor("Kfactor", 1.0f),
@@ -56,42 +56,13 @@ WaterFlowMeasCluster::WaterFlowMeasCluster():
     // System Event Loop
     esp_event_loop_create_default();    // Create System Event Loop
     _irqMeter.setEventHandler(&impulsionHandler, ptr);
-/*
-    // Cluster definition
-    uint8_t status = 0x0;
-    uint8_t unitOfMeas = ESP_ZB_ZCL_METERING_UNIT_M3_M3H_BINARY ;
-   
-    uint8_t sumFormat = 0b11111011;
-    uint8_t deviceType = ESP_ZB_ZCL_METERING_WATER_METERING;
-
-    setAttribute(ESP_ZB_ZCL_ATTR_METERING_STATUS_ID, &status);
-    setAttribute(ESP_ZB_ZCL_ATTR_METERING_UNIT_OF_MEASURE_ID, &unitOfMeas);
-    setAttribute(ESP_ZB_ZCL_ATTR_METERING_SUMMATION_FORMATTING_ID, &sumFormat);
-    setAttribute(ESP_ZB_ZCL_ATTR_METERING_METERING_DEVICE_TYPE_ID, &deviceType);
-*/
-
-
     
-}
-
-void WaterFlowMeasCluster::printAttrPointers()
-{
-    //TODEL
-    std::cout << std::hex << "printAttrPointers - attr_list " << _attr_list << std::endl;
-    std::cout << std::hex << "printAttrPointers - attr_list->next " << _attr_list->next << std::endl;
 }
 
 ZbCluster* WaterFlowMeasCluster::getKfactorCluster()
 {
     return _kfactorCluster;
 }
-/*
-void WaterMeterCluster::startReporting()
-{
-    _reportTask = new PeriodicSoftTask(&WaterMeterCluster::reportCurrentSummation, 
-                                    this, (uint64_t)(_updatePeriod*1000), "waterMeterReportTask");
-}
-*/
 
 void WaterFlowMeasCluster::onAttrReported(clusterEvent_t event, std::vector<attribute_t> attrs)
 {
@@ -100,12 +71,11 @@ void WaterFlowMeasCluster::onAttrReported(clusterEvent_t event, std::vector<attr
     if (event != ATTR_REPORTED)
         return;
 
-    std::cout << "ATTR REPORTED *************** " << std::endl;
+    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow attribute reported %d, resetting to 0", 
+                        _pulseCount);
 
     _pulseCount = 0; 
     setFlowMeasuredValue(_pulseCount);
-
-
 
 }
 

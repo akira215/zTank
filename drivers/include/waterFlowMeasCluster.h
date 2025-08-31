@@ -34,9 +34,6 @@ public:
     /// @brief return a pointer to the embedded kfactor cluster
     ZbCluster* getKfactorCluster();
 
-   
-    //TODEL
-    void printAttrPointers();
 
 private:
     // Event Handler for GPIO that is triggered by tick counter
