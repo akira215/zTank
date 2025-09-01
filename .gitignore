@@ -10,3 +10,11 @@ sdkconfig
 sdkconfig.old
 .clangd
 .old
+#KiCad
+*.kicad_pcb.lck
+*.kicad_sch-bak
+*.kicad_sch.lck
+*.kicad_pcb.lck
+**/tank_PCB-backups/
+#FreeCad
+*.FCBak
