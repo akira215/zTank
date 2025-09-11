@@ -22,11 +22,11 @@ could be reported to try to improve it.
 
 ## PCB design
 
-[PCB design](PCB/README.md)
+![Alt text](PCB/screenshot/TankMonitorV1_1.png?raw=true "3D view of PCB board")
 
-## Enclosure design design
+## PCB design
 
-[Enclosure design](3Dprint/README.md)
+[text](3Dprint/README.md)
 
 ## Caveats
 
