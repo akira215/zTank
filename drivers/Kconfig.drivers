@@ -28,7 +28,7 @@ menu "ADS converter config"
     config UPSTREAM_PRESSURE_CH
         int "ADC Channel for Upstream pressure sensor"
         range 0 4
-        default 2
+        default 3
         help
             Check the shematic to get the correct ADC channel regarding 
             connecting pin on the terminal block.
@@ -36,7 +36,7 @@ menu "ADS converter config"
     config DOWNSTREAM_PRESSURE_CH
         int "ADC Channel for Upstream pressure sensor"
         range 0 4
-        default 3
+        default 2
         help
             Check the shematic to get the correct ADC channel regarding 
             connecting pin on the terminal block.
