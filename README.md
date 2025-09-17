@@ -37,18 +37,86 @@ A 4-20mA input is available for any other futher sensor requirement. Adding a se
 
 ## Sensor selection
 
-To develop
+### Upstream and downstream static pressure
+
+  Regular pressure transmitter are not so expensive and efficient for that purpose. These 2 sensors shall have a measured range according to installation pressure. In regular network, pressure is limited to 3 bars, so selecting a sensor 0-5 bars seems a good choice. If the upper value is higher, the resolution of the measurement will be less as the ADC converter resolution is fixed.
+
+  The shunt to convert current to tension for the ADC converter is 133R, and Imax for the sensor @max range will be 20mA so Umax for ADS1115 will be 2.66V (U=R*I). 5 bars = 500 kPa, so the calibration factor shall be 500 kPa / 2.66V = 187.97 kPa/V. Of course this factor shall be adjusted by measuring at the same location of one sensor the pressure, and correcting the reading of the sensor, but this short computation can help to start setting up calibration factor
+
+### Water level
+
+  Whatever technology of sensor could be used as soon as its output is 4-20mA current. Tests have been done using submerged differential pressure sensor, with the balance pipe to get the atmospheric pressure that run with the electrical cable, they worked properly. The range of this sensor shall be in accordance with the depth of the tank. The output value of Zigbee2MQTT will be a % of depth (meaning 100% when tank is full). Depending on the shape and cross section of the tank, this could be converted to a volume directly in the Z2M external converter, or outside Z2M in another software.
+
+  The shunt to convert current to tension for the ADC converter is 133R, and Imax for the sensor @max range will be 20mA so Umax for ADS1115 will be 2.66V (U=R*I). fFr 100% the calibration factor shall be 100% / 2.66V = 37.594 %/V. Of course this factor shall be adjusted when tank is full to read 100% in the Zigbee2MQTT output.
+
+### Water pulse counter
+
+  The water meter shall send a pulse each XX L, whatever XX is. It is expected to have a dry contact that switch on and off each pulse. Hardware debouncer has been implemented for a particular counter, measuring bouncing using an oscilloscope. Computation of this RC filter has been provided here:
+  [Spreadsheet](<PCB/2024-06-29 Comput.ods>)
+    
+  The kFactor to be set up in Zigbee2MQTT is only the L per pulse of the counter.
 
 ## Zigbee2MQTT integration
+
+External converter shall be loaded according to Zigbee2MQTT instructions:
+
+[Zigbee2MQTT external converters](https://www.zigbee2mqtt.io/advanced/more/external_converters.html)
 
 To develop
 
 ## Build Instructions
 
+The embedded software required `esp-ash-components`:
+
 ```
 git submodule add https://github.com/akira215/esp-ash-components.git components
 ```
-Create a partition.csv for zigbee and configure menuconfig with custom partition table
+
+Create a partition.csv for zigbee and configure menuconfig with custom partition table (shall be done by default)
+
+## Configuration
+
+Configuration is available in `menuconfig` in the `Project setting` section:
+
+### Pin Layout
+
+  This section refer to hardware connection of LED button and volume meter. <span style="color:red">**These settings shall not be changed unless new hardware is developped.**</span>
+
+![pin layout](<img/zTank config pin layout.png>)
+
+
+### Zigbee endpoints
+
+  This section refer to the endpoint for each sensor of the device. Any change in this number require to update the external converter accordingly
+
+![Zigbee endpoints](<img/zTank config zigbee endpoints.png>)
+
+  And in Zigbee2MQTT external converter:
+
+![External converter](<img/zTank ext converter zigbee endpoints.png>)
+
+### Zigbee device
+
+  Zigbee stack has been sized doing extensive tests. <span style="color:red">**This setting shall not be changed.**</span>
+
+![Zigbee device](<img/zTank config zigbee stack.png>)
+
+### ADS Pin Layout
+
+  This section refer to hardware connection of ADS1115 converter to µC pin. <span style="color:red">**These settings shall not be changed unless new hardware is developped.**</span>
+
+![ADS pin layout](<img/zTank config ADS pin layout.png>)
+
+### ADS Converter config
+
+  The first 3 inputs refer to the channel in which each sensor is connected. Take care that channel are not implemented on the connector in a logical order, so please refer to pictures that describe which pins of the connector is connected to which ADC channel (and polarity for sensors)
+
+  The delay between 2 queries of ADS is the update rate of the measurement. Between 2 measurement, ADS is put in sleep to optimize consumption. Take care that driver will trigger one conversion for each channel, so there is a minimal time between 2 queries, depending on the resolution set for the ADS.
+
+  The delay between 2 queries of temperature is the update rate of the measurement of the internal µC temperature sensor.
+
+
+![ADS converter config](<img/zTank config ADS converter config.png>)
 
 ## Current Status
 
