@@ -1,3 +1,27 @@
+menu "OTA"
+    config HARDWARE_VERSION
+        int "Hardware version for OTA update"
+        range 0 65535
+        default 1
+        help
+            Hardware version for OTA update.
+    
+    config MAX_DATA_SIZE
+        int "The maximum size of OTA data"
+        range 0 255
+        default 200
+        help
+            The maximum size of OTA data
+
+    config OTA_TIMER_QUERY
+        int "Time between OTA queries in minutes"
+        range 0 65535
+        #default 1440
+        default 1
+        help
+            The field indicates the time of querying OTA image for OTA upgrade client
+endmenu
+
 menu "Pin layout"
     config PIN_LED
         int "On Board LED GPIO Num"

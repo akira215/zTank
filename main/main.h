@@ -12,6 +12,7 @@
 #include "waterPressureMeasCluster.h"
 #include "waterLevelMeasCluster.h"
 
+#include "zbOtaClusterClient.h"
 
 #include "zbHaCluster.h"
 #include "zbTimeClusterClient.h" 
@@ -62,6 +63,8 @@ private:
     WaterPressureMeasCluster*   _downstreamPressure = nullptr;
     WaterLevelMeasCluster*      _waterLevel         = nullptr;
     TempCluster*                _tempMeasurement    = nullptr;
+
+    ZbOtaClusterClient*         _otaCluster         = nullptr;
 
 
 }; // Main Class

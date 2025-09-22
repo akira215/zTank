@@ -183,6 +183,11 @@ void Main::setup(void)
                         (void*)MANUFACTURER_NAME);
     basicCl->addAttribute(ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
                         (void*)MODEL_IDENTIFIER);
+
+
+    _otaCluster = new ZbOtaClusterClient(CONFIG_OTA_TIMER_QUERY,
+                                        CONFIG_HARDWARE_VERSION,
+                                        CONFIG_MAX_DATA_SIZE);
     
 /*
     ZbPowerCfgCluster* powerCl = new ZbPowerCfgCluster(false,
@@ -226,6 +231,7 @@ void Main::setup(void)
     measEp->addCluster(basicCl);
     measEp->addCluster(_fMeter);
     measEp->addCluster(_fMeter->getKfactorCluster());
+    measEp->addCluster(_otaCluster);
 
     upstreamEp->addCluster(identifyServer2);
     upstreamEp->addCluster(_upstreamPressure);

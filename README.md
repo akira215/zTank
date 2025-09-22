@@ -58,9 +58,30 @@ A 4-20mA input is available for any other futher sensor requirement. Adding a se
 
 ## Zigbee2MQTT integration
 
+### External converter
+
 External converter shall be loaded according to Zigbee2MQTT instructions:
 
 [Zigbee2MQTT external converters](https://www.zigbee2mqtt.io/advanced/more/external_converters.html)
+
+Restart Zigbee2MQTT `Webpage > Settings > Tools > Restart Zigbee2MQTT`
+
+### Pairing zTank device
+
+If the LED is fixed on, short press one time on the button, this will put the device in pairing mode.
+Device is in Pairing Mode when the LED flahes quickly. 
+
+Put Coordinator (or other device) in pairing mode using Zigbee2MQTT GUI (antenna symbol on the upper right of the screen with mention `All`)
+
+After a short time, LED shall stop flashing. When LED is off, device is paired. You can check on Zigbee2MQTT device list
+
+### Device icon
+
+To add an icon in Zigbee2MQTT GUI, create a folder named `device_icon` in the root of Zigbee2MQTT docker installation (folder containing `configuration.yml`). In that foler, put the `zTank_icon.png` file contained in the `img` directory of this repository.
+
+On Zigbee2MQTT GUI, go to `Devices` list and click on the device. Go to `Settings` tab and scroll down to the `icon` box.
+Put `device_icons/zTank_icon.png` in that box. Icon shall be visible on Zigbee2MQTT GUI.
+
 
 To develop
 
