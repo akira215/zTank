@@ -48,10 +48,6 @@ private:
 
     // Set the attribute value for the cluster
     void setFlowMeasuredValue(uint16_t newValue);
-
-    /// @brief callback when attr are reported
-    void onAttrReported(clusterEvent_t event, std::vector<attribute_t> attrs);
-    
     
     /// @brief Reset counter to 0
     void resetCounter();

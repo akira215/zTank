@@ -42,8 +42,6 @@ WaterFlowMeasCluster::WaterFlowMeasCluster():
     
     _kfactorCluster->registerEventHandler(&WaterFlowMeasCluster::setKfactor, this);
 
-    //registerEventHandler(&WaterFlowMeasCluster::onAttrReported, this);
-
     _irqMeter.enableInterrupt(GPIO_INTR_NEGEDGE);
 
     // Create a pointer of Pointer to be able to access to this in the Event Handler
@@ -92,19 +90,6 @@ ZbCluster* WaterFlowMeasCluster::getKfactorCluster()
     return _kfactorCluster;
 }
 
-void WaterFlowMeasCluster::onAttrReported(clusterEvent_t event, std::vector<attribute_t> attrs)
-{
-    (void)attrs; // unused parameter
-
-    if (event != ATTR_REPORTED)
-        return;
-
-    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow attribute reported %d", 
-                        _pulseCount);
-
-    resetCounter();
-
-}
 
 void WaterFlowMeasCluster::resetCounter()
 {
