@@ -12,6 +12,7 @@
 #include <vector> // todel
 
 #include "zbEndpoint.h" // to del
+#include "periodicSoftTask.h" // to del
 
 /*
 #include "zbBasicCluster.h" //TODEL
@@ -117,6 +118,18 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             ledFlash(0);
             // Synchronise RTC clock of the device
             _timeClient->syncRTC();
+
+            _checkRTCSync = new PeriodicSoftTask(&Main::checkRTCSync, this, 500);
+
+            // Wait for the clock to be synchronized (retry every seconds)
+            //while(!(_timeClient->isSynchronized()))
+            //    vTaskDelay( 1000 / portTICK_PERIOD_MS );
+           
+            //if (_fMeter) {
+            //    ESP_LOGW(TAG,"Clock is finally sync!");
+            //}
+                
+
             }
             break;
         case ZbNode::JOINING:
@@ -140,6 +153,18 @@ void Main::zbDeviceEventHandler(ZbNode::nodeEvent_t event)
             break;
     }
   
+}
+
+void Main::checkRTCSync(){
+    if(_timeClient->isSynchronized()){
+        if (_fMeter) {
+            ESP_LOGV(TAG,"Clock is sync - triggering action on RTC");
+            _fMeter->setupResetTask(CONFIG_SEC_FROM_MIDNIGHT);
+        }
+
+        delete _checkRTCSync;
+        _checkRTCSync = nullptr;
+    }
 }
 
 void Main::setup(void)

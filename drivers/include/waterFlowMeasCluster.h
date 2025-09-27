@@ -8,6 +8,7 @@
 
 #include "cppgpio.h"
 #include "persistedValue.h"
+#include "scheduledTask.h"
 #include "ZbFlowMeasCluster.h"
 #include "zbAnalogValueCluster.h"
 
@@ -24,6 +25,8 @@ class WaterFlowMeasCluster : public ZbFlowMeasCluster
     //PeriodicSoftTask*       _reportTask = nullptr;
     uint16_t                _pulseCount; // pulse counter re
     uint64_t                _currentVolume = 0; // In fact it is not the current volume but number of tick
+    uint64_t                _secondsFromMidnight = 0;
+    ScheduledTask*          _resetTask   = nullptr; 
 public:
     WaterFlowMeasCluster();
 
@@ -33,6 +36,9 @@ public:
 
     /// @brief return a pointer to the embedded kfactor cluster
     ZbCluster* getKfactorCluster();
+    
+    /// @brief setup a task to reset the counter to 0 at a given time of the day
+    void setupResetTask(uint64_t secondsFromMidnight = 0);
 
 
 private:
@@ -45,6 +51,9 @@ private:
 
     /// @brief callback when attr are reported
     void onAttrReported(clusterEvent_t event, std::vector<attribute_t> attrs);
-
+    
+    
+    /// @brief Reset counter to 0
+    void resetCounter();
 
 };

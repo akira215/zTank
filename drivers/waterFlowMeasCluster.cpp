@@ -6,7 +6,7 @@
 */
 
 #include "waterFlowMeasCluster.h"
-
+#include <time.h>
 #include <esp_log.h> 
 
 //Static
@@ -37,16 +37,12 @@ WaterFlowMeasCluster::WaterFlowMeasCluster():
                                 _pulseCount(0)
 {
     // setup the embedded Kfactor cluster (analog value)
-    //float_t currentFactor = _Kfactor;
     _kfactorCluster = new ZbAnalogValueCluster(false, false, _Kfactor);
-    //_kfactorCluster->addAttribute(ESP_ZB_ZCL_ATTR_ANALOG_VALUE_DESCRIPTION_ID, 
-    //                                        (void*)K_FACTOR_ATTR);
-                      
+      
     
     _kfactorCluster->registerEventHandler(&WaterFlowMeasCluster::setKfactor, this);
 
-    registerEventHandler(&WaterFlowMeasCluster::onAttrReported, this);
-
+    //registerEventHandler(&WaterFlowMeasCluster::onAttrReported, this);
 
     _irqMeter.enableInterrupt(GPIO_INTR_NEGEDGE);
 
@@ -57,6 +53,38 @@ WaterFlowMeasCluster::WaterFlowMeasCluster():
     esp_event_loop_create_default();    // Create System Event Loop
     _irqMeter.setEventHandler(&impulsionHandler, ptr);
     
+}
+
+void WaterFlowMeasCluster::setupResetTask(uint64_t secondsFromMidnight)
+{
+    _secondsFromMidnight = secondsFromMidnight;
+    // get current local time using C (as tz is set for C only)
+    time_t now;
+    struct tm timeinfo;
+
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    uint64_t currentSecFromMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
+
+    uint64_t delayToReset;
+    if (secondsFromMidnight > currentSecFromMidnight)
+        delayToReset =  ( secondsFromMidnight - currentSecFromMidnight ) * 1000;
+    else
+        delayToReset = ( secondsFromMidnight - currentSecFromMidnight + 86400 ) *1000; // add 24h
+
+    ESP_LOGV(ZCLUSTER_TAG, "WaterFlowMeasCluster -setupResetTask -  current from midnight: %lld sec - target: %lld sec - delay : %lld ms", 
+                                    currentSecFromMidnight, secondsFromMidnight, delayToReset);
+
+    if(_resetTask)
+        _resetTask->startTimer(delayToReset);
+    else
+        _resetTask = new ScheduledTask(&WaterFlowMeasCluster::resetCounter, 
+                                        this,
+                                        delayToReset,
+                                        std::string("WaterFlowResetTask"),
+                                        false);
+
 }
 
 ZbCluster* WaterFlowMeasCluster::getKfactorCluster()
@@ -71,13 +99,25 @@ void WaterFlowMeasCluster::onAttrReported(clusterEvent_t event, std::vector<attr
     if (event != ATTR_REPORTED)
         return;
 
-    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow attribute reported %d, resetting to 0", 
+    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow attribute reported %d", 
+                        _pulseCount);
+
+    resetCounter();
+
+}
+
+void WaterFlowMeasCluster::resetCounter()
+{
+    ESP_LOGV(ZCLUSTER_TAG, "WaterFlow resetting to 0", 
                         _pulseCount);
 
     _pulseCount = 0; 
     setFlowMeasuredValue(_pulseCount);
 
+    setupResetTask(_secondsFromMidnight);
+
 }
+
 
 void WaterFlowMeasCluster::setKfactor(clusterEvent_t event, std::vector<attribute_t> attrs)
 {

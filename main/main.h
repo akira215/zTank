@@ -52,6 +52,9 @@ private:
     /// if -1 led will be switch on
     static void ledFlash(uint64_t speed);
     
+    // Check RTC Sync and trigger all operation that require to be RTC sync
+    void checkRTCSync();
+
     ZbNode*                     _zbDevice           = nullptr;
     ZbTimeClusterClient*        _timeClient         = nullptr;
 
@@ -65,6 +68,8 @@ private:
     TempCluster*                _tempMeasurement    = nullptr;
 
     ZbOtaClusterClient*         _otaCluster         = nullptr;
+
+    PeriodicSoftTask*           _checkRTCSync       = nullptr;
 
 
 }; // Main Class

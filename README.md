@@ -82,8 +82,9 @@ To add an icon in Zigbee2MQTT GUI, create a folder named `device_icon` in the ro
 On Zigbee2MQTT GUI, go to `Devices` list and click on the device. Go to `Settings` tab and scroll down to the `icon` box.
 Put `device_icons/zTank_icon.png` in that box. Icon shall be visible on Zigbee2MQTT GUI.
 
+### Reporting
 
-To develop
+To develop*******************************************************************
 
 ## Build Instructions
 

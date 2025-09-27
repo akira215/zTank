@@ -1,3 +1,13 @@
+menu "ADS converter config"
+    config SEC_FROM_MIDNIGHT
+        int "Number of seconds from midnight resetting water counter"
+        range 0 86399
+        default 0
+        help
+            Number of seconds from midnight when Water meter will be daily reset.
+
+endmenu
+
 menu "ADS Pin layout"
     
     config I2C_MASTER_SCL
@@ -34,7 +44,7 @@ menu "ADS converter config"
             connecting pin on the terminal block.
     
     config DOWNSTREAM_PRESSURE_CH
-        int "ADC Channel for Upstream pressure sensor"
+        int "ADC Channel for Downstream pressure sensor"
         range 0 4
         default 2
         help
