@@ -5,6 +5,7 @@
   Author: Akira Shimahara
 */
 
+
 const fz = require('zigbee-herdsman-converters/converters/fromZigbee');
 const tz = require('zigbee-herdsman-converters/converters/toZigbee');
 const exposes = require('zigbee-herdsman-converters/lib/exposes');
@@ -42,7 +43,7 @@ function genZtank() {
     // The name shall not contain space otherwise it is not reported to HA
     return [
             exposes.numeric('water_consumed', ea.STATE_GET)
-                .withDescription('Water meter record, reset to 0 after each reading')
+                .withDescription('Water meter record, reset to 0 each day at 00:00')
                 .withUnit('L'),
                 //.withEndoint('Name'),
             exposes.numeric('upstream_pressure', ea.STATE_GET)
@@ -51,9 +52,6 @@ function genZtank() {
             exposes.numeric('downstream_pressure', ea.STATE_GET)
                 .withDescription('Pressure on network side')
                 .withUnit('bars'),
-            exposes.numeric('delta_pressure', ea.STATE_GET)
-                .withDescription('Delta Pressure between filters')
-                .withUnit('mbars'),
             exposes.numeric('water_level', ea.STATE_GET)
                 .withDescription('Water Level in the tank')
                 .withUnit('%'),
@@ -140,7 +138,7 @@ const fromZigbee_Metering = {
         // logger.info(`zTank.js convert meta =${JSON.stringify(meta)}`);
 
         // Occured when a read from Zigbee occured. Device only send number of tick that occured,
-        // and reset to 0 its tick count each time value is reported to z2m
+        // and reset to 0 its tick count each day at 00:00
         if (msg.data.hasOwnProperty('measuredValue')) {
             const multiplier = options.k_factor;
             const data = msg.data['measuredValue'];
@@ -182,7 +180,6 @@ const fromZigbee_Pressure = {
                 const down_value = down_ep?.clusters?.msPressureMeasurement?.attributes?.measuredValue;
 
                 result[`upstream_pressure`] = up_value / 100;
-                result[`delta_pressure`] = up_value * 10 - down_value * 10; // DeltaP is in mbars
                 
             }
 
@@ -195,7 +192,6 @@ const fromZigbee_Pressure = {
                 const up_value = up_ep?.clusters?.msPressureMeasurement?.attributes?.measuredValue;
 
                 result[`downstream_pressure`] = down_value / 100;
-                result[`delta_pressure`] = up_value * 10 - down_value * 10; // DeltaP is in mbars
             }
 
         }
