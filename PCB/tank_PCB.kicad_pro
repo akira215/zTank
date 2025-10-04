@@ -60,8 +60,20 @@
       ],
       "drc_exclusions": [
         [
-          "starved_thermal|63000000|114800000|3a1768d0-03e9-4891-ad7b-9925f48d3ccf|be3729f1-fa63-4e21-bee1-13582dfd5bd3|F.Cu",
-          ""
+          "hole_clearance|75500000|174070000|b9052fa2-8c10-47db-9c8c-f3874c6d8d2b|f3bb9b98-8576-4f2a-a039-eb9c5b6fbad4",
+          "Clearance Ok after fab test (JLPCB)"
+        ],
+        [
+          "hole_clearance|75700000|174070000|b9052fa2-8c10-47db-9c8c-f3874c6d8d2b|7add51db-1872-4bc4-b998-a79c24fc0c61",
+          "Clearance Ok after fab test (JLPCB)"
+        ],
+        [
+          "hole_clearance|81100000|174070000|8131dac6-ec29-440f-9e6d-d0a3849b0f01|29f6c373-840b-4fb4-9f95-ce79392d5ae1",
+          "Clearance Ok after fab test (JLPCB)"
+        ],
+        [
+          "hole_clearance|81300000|174070000|8131dac6-ec29-440f-9e6d-d0a3849b0f01|b3b97f37-a970-4371-915a-6faf8a9782b5",
+          "Clearance Ok after fab test (JLPCB)"
         ]
       ],
       "meta": {
@@ -246,7 +258,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "power_pin_not_driven|3416300|495300|76bd0186-1c8c-48ee-a802-94e8adb862e9|00000000-0000-0000-0000-000000000000|/dff7fccf-7d43-4c91-ba8a-bfa873cc6676|/dff7fccf-7d43-4c91-ba8a-bfa873cc6676|",
+        "Driven by +3.3V via fuse"
+      ]
+    ],
     "meta": {
       "version": 0
     },

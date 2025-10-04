@@ -1,1 +1,0 @@
-https://github.com/espressif/kicad-libraries/blob/main/3dmodels/espressif.3dshapes/ESP32-C6-WROOM-1.STEP
