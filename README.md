@@ -47,7 +47,10 @@ A 4-20mA input is available for any other futher sensor requirement. Adding a se
 
   Whatever technology of sensor could be used as soon as its output is 4-20mA current. Tests have been done using submerged differential pressure sensor, with the balance pipe to get the atmospheric pressure that run with the electrical cable, they worked properly. The range of this sensor shall be in accordance with the depth of the tank. The output value of Zigbee2MQTT will be a % of depth (meaning 100% when tank is full). Depending on the shape and cross section of the tank, this could be converted to a volume directly in the Z2M external converter, or outside Z2M in another software.
 
-  The shunt to convert current to tension for the ADC converter is 133R, and Imax for the sensor @max range will be 20mA so Umax for ADS1115 will be 2.66V (U=R*I). fFr 100% the calibration factor shall be 100% / 2.66V = 37.594 %/V. Of course this factor shall be adjusted when tank is full to read 100% in the Zigbee2MQTT output.
+  The shunt to convert current to tension for the ADC converter is 133R, and Imax for the sensor @max range will be 20mA so Umax for ADS1115 will be 2.66V (U=R*I). For 100% the calibration factor shall be 100% / 2.66V = 37.594 %/V. 
+  
+  Of course this factor shall be adjusted when tank is full to read 100% in the Zigbee2MQTT output. For example, if yo have a 0-2m sensor and the require stroke of your tank (max height - min height before depriming pump) is 1.5m, it means that the 100% value of your tank will occur when sensor will read 1.5m (take care to install the sensor just before depriming pump). The voltage at the converter will be 1.5m/2m * 2.66V = 1.995V, so you will have to set the calibration factor considering 100% / 1.995V = 50.125%/V
+
 
 ### Water pulse counter
 
