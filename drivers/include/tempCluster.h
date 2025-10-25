@@ -23,12 +23,8 @@ public:
     /// @param delay_ms Delay between 2 queries, should be greater than query duration (Sum of each conversion times)
     void start(uint64_t delay_ms = 1000);
     
-    
     void stop(void);
     
-    /// @brief Event handler when conversion is received
-    static void ads1115_event_handler(uint16_t input, double value);
-
     /// @brief Event handler for periodic task
     /// @brief read the temperature
     void readTemperature();
